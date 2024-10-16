@@ -1,8 +1,8 @@
-# tests/test_rasterstats.py
+# tests/test_uavstats.py
 
 from typer.testing import CliRunner
 
-from rasterstats import __app_name__, __version__, cli
+from uavstats import __app_name__, __version__, cli
 
 runner = CliRunner()
 

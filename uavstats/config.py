@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv, find_dotenv
 from string import Template
+from typing import TypedDict
 
 load_dotenv(find_dotenv())
 
@@ -16,6 +17,30 @@ if not os.path.exists(GIS_DATA_DIR):
 
 VARI_GEO_TIFF = os.path.join(GIS_DATA_DIR, 'VARI.tif')
 OUTPUT_JSON = os.path.join(GIS_DATA_DIR, 'output.json')
+
+
+# LAND PARCELS
+LAND_PARCELS_FILE = os.getenv('LAND_PARCELS_FILE')
+LAND_PARCELS_ID_FIELD = os.getenv('LAND_PARCELS_ID_FIELD')
+PROJECT_ID = os.getenv('PROJECT_ID')
+
+# SENSOR THINGS API
+
+
+class Datastream(TypedDict):
+    name: str
+    description: str
+    sensor_id: int
+    observed_property_id: int
+
+
+DATASTREAMS: list[Datastream] = [{
+    'name': Template('$parcel_id - NDVI'),
+    'description': Template('NDVI Zonal Stats for $parcel_id'),
+    'sensor_id': 1,
+    'observed_property_id': 1,
+}]
+
 
 # WPS REQUESTS
 WPS_URL = f'{

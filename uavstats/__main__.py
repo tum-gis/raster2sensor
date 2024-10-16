@@ -1,7 +1,7 @@
 """Entry point script."""
 
 
-from rasterstats import cli, __app_name__
+from uavstats import cli, __app_name__
 
 
 def main():

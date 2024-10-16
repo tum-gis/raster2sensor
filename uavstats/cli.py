@@ -2,8 +2,8 @@ from typing import Optional
 
 import typer
 
-from rasterstats import __app_name__, __version__
-from rasterstats.utils import clear, timeit
+from uavstats import __app_name__, __version__
+from uavstats.utils import clear, timeit
 
 app = typer.Typer()
 
