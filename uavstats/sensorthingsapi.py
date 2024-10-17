@@ -25,8 +25,8 @@ class Datastream:
     description: str
     observationType: str
     unitOfMeasurement: UnitOfMeasurement
-    Sensor: Dict[str, int]
-    ObservedProperty: Dict[str, int]
+    Sensor: int
+    ObservedProperty: int
 
 
 @dataclass

@@ -5,7 +5,6 @@ import time
 import requests
 from functools import wraps
 from rich import print
-from pprint import pprint
 
 
 def clear():
@@ -89,10 +88,11 @@ def create_sensorthingsapi_thing(url: str, thing: dict):
     Returns:
         response (_type_): API response
     """
+    headers = {'Content-Type': 'application/json;charset=UTF-8'}
     try:
-        response = requests.post(url, json=thing)
+        response = requests.post(url=url, data=thing, headers=headers)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
         print(f"[red]An error occurred: {e}")
         sys.exit(1)
-    return response.json()
+    return response.status_code

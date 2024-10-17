@@ -1,8 +1,7 @@
 import os
 from dotenv import load_dotenv, find_dotenv
 from string import Template
-from typing import TypedDict
-
+from uavstats.sensorthingsapi import UnitOfMeasurement, Datastream
 load_dotenv(find_dotenv())
 
 
@@ -25,20 +24,30 @@ LAND_PARCELS_ID_FIELD = os.getenv('LAND_PARCELS_ID_FIELD')
 PROJECT_ID = os.getenv('PROJECT_ID')
 
 # SENSOR THINGS API
-
-
-class Datastream(TypedDict):
-    name: str
-    description: str
-    sensor_id: int
-    observed_property_id: int
-
-
+SENSOR_THINGS_API_URL = os.getenv('SENSOR_THINGS_API_URL')
 DATASTREAMS: list[Datastream] = [{
-    'name': Template('$parcel_id - NDVI'),
-    'description': Template('NDVI Zonal Stats for $parcel_id'),
-    'sensor_id': 1,
-    'observed_property_id': 1,
+    'name': Template('NDVI - $parcel_id'),
+    'description': Template('NDVI Zonal Stats for Parcel $parcel_id'),
+    'observationType': 'http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
+    'Sensor': 1,
+    'ObservedProperty': 1,
+    'unitOfMeasurement': UnitOfMeasurement(
+        name='NDVI',
+        symbol='NDVI',
+        definition='Normalized Difference Vegetation Index'
+    )
+},
+    {
+    'name': Template('VARI - $parcel_id'),
+    'description': Template('VARI Zonal Stats for Parcel $parcel_id'),
+    'observationType': 'http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
+    'Sensor': 1,
+    'ObservedProperty': 2,
+    'unitOfMeasurement': UnitOfMeasurement(
+        name='VARI',
+        symbol='VARI',
+        definition='Visible Atmospherically Resistant Index'
+    )
 }]
 
 
