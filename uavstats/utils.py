@@ -24,15 +24,15 @@ def timeit(func):
     return wrapper
 
 
-def get_file_name(file_path: str):
+def get_file_name(file_path: str) -> str:
     return os.path.splitext(os.path.basename(file_path))[0]
 
 
-def get_file_extension(file_path: str):
+def get_file_extension(file_path: str) -> str:
     return os.path.splitext(file_path)[1]
 
 
-def get_files(input_dir: str, extensions: list):
+def get_files(input_dir: str, extensions: list) -> list:
     '''Returns a list of files with the specified extensions in the input directory'''
     files = []
     for file in os.listdir(input_dir):
@@ -41,7 +41,7 @@ def get_files(input_dir: str, extensions: list):
     return files
 
 
-def fetch_data(url):
+def fetch_data(url) -> dict:
     """Fetch data from an API
 
     Args:
@@ -58,7 +58,7 @@ def fetch_data(url):
     return response.json()
 
 
-def fetch_sensorthingsapi(url):
+def fetch_sensorthingsapi(url) -> list:
     """Fetch SensorThings Paginated API endpoint
 
     Args:
@@ -78,7 +78,7 @@ def fetch_sensorthingsapi(url):
     return fetched_entities
 
 
-def create_sensorthingsapi_thing(url: str, thing: dict):
+def create_sensorthingsapi_thing(url: str, thing: dict) -> int:
     """Create a SensorThingsAPI Thing
 
     Args:
@@ -86,7 +86,7 @@ def create_sensorthingsapi_thing(url: str, thing: dict):
         thing (_type_): Thing data
 
     Returns:
-        response (_type_): API response
+        response.status_code (_type_): API response status code
     """
     headers = {'Content-Type': 'application/json;charset=UTF-8'}
     try:

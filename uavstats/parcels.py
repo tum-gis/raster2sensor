@@ -8,7 +8,7 @@ from rich import print
 from rich.console import Console
 from rich.traceback import install
 from uavstats import config
-from uavstats.utils import clear, get_file_extension, create_sensorthingsapi_thing
+from uavstats.utils import clear, get_file_extension, create_sensorthingsapi_thing, fetch_sensorthingsapi
 from uavstats.sensorthingsapi import Thing, Location, Datastream
 
 
@@ -18,7 +18,12 @@ console = Console()
 
 @dataclass
 class Parcels:
-    '''Land Parcels Data Class'''
+    '''Land Parcels Data Class
+    Args:
+        file_path (Path): Path to Land Parcels File
+        id_field (str): Parcels ID Field
+        project_id (str): Project ID
+    '''
     file_path: Path
     id_field: str
     project_id: str
@@ -28,15 +33,10 @@ class Parcels:
             raise FileNotFoundError(f'{self.file_path} not found')
         self.file_extension = get_file_extension(self.file_path)
 
-    def read_file(self):
+    def read_file(self) -> gpd.GeoDataFrame:
         '''Reads Land Parcels File'''
         driver = 'ESRI Shapefile' if self.file_extension == '.shp' else 'GeoJSON'
         return gpd.read_file(self.file_path, driver=driver)
-
-    def get_features(self):
-        '''Get Features'''
-        # return self.read_file().to_dict(orient='records')
-        return self.read_file()
 
     def create_sensorthings_things(self):
         '''Create SensorThingsAPI Things for the Land Parcels
@@ -44,14 +44,12 @@ class Parcels:
             - Each parcel has a Location
             - [Optional] Each parcel has one or many Datastreams
         '''
-        for feature in self.get_features().iterfeatures(drop_id=True):
+        for feature in self.read_file().iterfeatures(drop_id=True):
             if self.id_field not in feature['properties']:
                 raise KeyError(
                     f"Parcel ID field '{self.id_field}' does not exist in feature properties")
             parcel_id = feature['properties'][self.id_field]
             geometry = feature['geometry']
-            print(f'[yellow] {parcel_id}')
-            # print(feature)
             parcel_thing = Thing(
                 name=f'Land Parcel - {parcel_id}',
                 description=f'Land Parcel - {parcel_id}',
@@ -89,6 +87,37 @@ class Parcels:
             create_sensorthingsapi_thing(
                 things_url, parcel_thing_json)
 
+    @staticmethod
+    def fetch_parcels_geojson(project_id: str) -> dict:
+        '''Fetch Parcels GeoJSON from SensorThingsAPI
+        Args:
+            project_id (str): Project ID
+        Returns:
+            parcels_geojson (dict): Parcels GeoJSON
+        '''
+        parcels_url = f"{config.SENSOR_THINGS_API_URL}/Things?$filter=properties/project_id eq '{
+            project_id}'&$expand=Locations($select=location)"
+        parcels_data = fetch_sensorthingsapi(parcels_url)
+        # convert the fetched data to a GeoJSON
+        parcels_geojson = {
+            'type': 'FeatureCollection',
+            'features': [
+                {
+                    'type': 'Feature',
+                    'geometry': parcel['Locations'][0]['location'],
+                    'properties': {
+                        'iot_id': parcel['@iot.id'],
+                        'parcel_id': parcel['properties']['parcel_id'],
+                        'project_id': parcel['properties']['project_id'],
+                        'name': parcel['name'],
+                    }
+                } for parcel in parcels_data
+            ]}
+        # !DEGUG: write the GeoJSON to a file
+        with open(config.PARCELS_GEOJSON, 'w') as f:
+            json.dump(parcels_geojson, f, indent=2)
+        return parcels_geojson
+
 
 if __name__ == "__main__":
     clear()
@@ -97,6 +126,8 @@ if __name__ == "__main__":
         id_field=config.LAND_PARCELS_ID_FIELD,
         project_id=config.PROJECT_ID
     )
-    # features = parcels.get_features()
-    # print(features)
+    features = parcels.read_file()
+    print(features)
     # parcels.create_sensorthings_things()
+    parcels_geojson = Parcels.fetch_parcels_geojson(config.PROJECT_ID)
+    # print(parcels_geojson)
