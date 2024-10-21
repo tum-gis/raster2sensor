@@ -5,6 +5,7 @@ import time
 import requests
 from functools import wraps
 from rich import print
+import xml.etree.ElementTree as ET
 
 
 def clear():
@@ -96,3 +97,11 @@ def create_sensorthingsapi_thing(url: str, thing: dict) -> int:
         print(f"[red]An error occurred: {e}")
         sys.exit(1)
     return response.status_code
+
+
+def pretty_xml(xml_string: str) -> str:
+    '''Pretty print XML from a String'''
+    element = ET.fromstring(xml_string)
+    ET.indent(element, level=2)
+    print(ET.tostring(element, encoding='unicode'))
+    return ET.tostring(element, encoding='unicode')

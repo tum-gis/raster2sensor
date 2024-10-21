@@ -40,43 +40,49 @@ class Thing:
 
 # Example usage:
 thing = Thing(
-    name="Kitchen",
-    description="The Kitchen in my house",
-    properties={"oven": True, "heatingPlates": 4},
+    name="Land Parcel - 1",
+    description="Land Parcel - 1",
+    properties={
+        "parcel_id": 1,
+        "project_id": "FAIRagro UC6"
+    },
     Locations=[
         Location(
-            name="Location of the kitchen",
-            description="This is where the kitchen is",
+            name="Location of Parcel - 1",
+            description="Polygon Geometry for Parcel - 1",
             encodingType="application/geo+json",
-            location={"type": "Point", "coordinates": [8.438889, 44.27253]}
+            location={
+                "type": "Polygon",
+                "coordinates": [[[10.628838331813736, 49.20751413114618], [10.628818955886832, 49.2075186951713], [10.628851463185999, 49.20757793906097], [10.6288708391328, 49.20757337503022], [10.628838331813736, 49.20751413114618]]]
+            }
         )
     ],
     Datastreams=[
         Datastream(
-            name="Temperature in the Kitchen",
-            description="The temperature in the kitchen, measured by the sensor next to the window",
+            name="NDVI - 1",
+            description="NDVI Zonal Stats for Parcel 1",
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
             unitOfMeasurement=UnitOfMeasurement(
-                name="Degree Celsius",
-                symbol="°C",
-                definition="ucum:Cel"
+                name="NDVI",
+                symbol="NDVI",
+                definition="Normalized Difference Vegetation Index"
             ),
-            Sensor={"@iot.id": 5},
+            Sensor={"@iot.id": 1},
             ObservedProperty={"@iot.id": 1}
         ),
         Datastream(
-            name="Humidity in the Kitchen",
-            description="The relative humidity in the kitchen, measured by the sensor next to the window",
+            name="VARI",
+            description="VARI Zonal Stats for Parcel 1",
             observationType="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
             unitOfMeasurement=UnitOfMeasurement(
-                name="Percent",
-                symbol="%",
-                definition="ucum:%"
+                name="VARI",
+                symbol="VARI",
+                definition="Visible Atmospherically Resistant Index"
             ),
-            Sensor={"@iot.id": 5},
-            ObservedProperty={"@iot.id": 5}
+            Sensor={"@iot.id": 1},
+            ObservedProperty={"@iot.id": 2}
         )
     ]
 )
 
-print(asdict(thing))
+# print(asdict(thing))
