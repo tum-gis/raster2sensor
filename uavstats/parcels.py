@@ -63,7 +63,9 @@ class Parcels:
                         description=f'Polygon Geometry for Parcel - {
                             parcel_id}',
                         encodingType='application/geo+json',
-                        location=geometry
+                        location={"type": "Feature",
+                                  "properties": {"parcel_id": parcel_id},
+                                  "geometry": geometry}
                     )
                 ],
                 Datastreams=[

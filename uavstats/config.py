@@ -16,6 +16,7 @@ if not os.path.exists(GIS_DATA_DIR):
 
 VARI_GEO_TIFF = os.path.join(GIS_DATA_DIR, 'VARI.tif')
 PARCELS_GEOJSON = os.path.join(GIS_DATA_DIR, 'parcels.geojson')
+OUTPUT_JSON = os.path.join(GIS_DATA_DIR, 'output.json')
 
 
 # LAND PARCELS

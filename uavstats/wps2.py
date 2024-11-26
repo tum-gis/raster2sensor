@@ -17,6 +17,7 @@ from rich.traceback import install
 from owslib.wps import WebProcessingService
 from uavstats import config
 from uavstats.utils import clear, timeit, pretty_xml, get_file_name, get_files
+from uavstats import xml_templates
 
 
 install(show_locals=True)
@@ -89,3 +90,6 @@ if __name__ == '__main__':
     print(zonal_stats)
     inputs = [x.identifier for x in zonal_stats.dataInputs]
     print(inputs)
+
+    wps.execute_wps_process(
+        pid='', inputs='', outputs=config.OUTPUT_JSON, request=xml_templates.XML_BODY_SAMPLE)
