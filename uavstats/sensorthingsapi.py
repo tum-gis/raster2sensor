@@ -10,6 +10,7 @@ class Location:
     description: str
     encodingType: str
     location: Dict[str, object]
+    properties: Dict[str, object] = None
 
 
 @dataclass
@@ -27,6 +28,7 @@ class Datastream:
     unitOfMeasurement: UnitOfMeasurement
     Sensor: int
     ObservedProperty: int
+    properties: Dict[str, object] = None
 
 
 @dataclass

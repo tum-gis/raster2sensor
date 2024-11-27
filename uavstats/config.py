@@ -21,14 +21,14 @@ OUTPUT_JSON = os.path.join(GIS_DATA_DIR, 'output.json')
 
 # LAND PARCELS
 LAND_PARCELS_FILE = os.getenv('LAND_PARCELS_FILE')
-LAND_PARCELS_ID_FIELD = os.getenv('LAND_PARCELS_ID_FIELD')
+TREATMENT_PARCELS_ID_FIELD = os.getenv('TREATMENT_PARCELS_ID_FIELD')
 PROJECT_ID = os.getenv('PROJECT_ID')
 
 # SENSOR THINGS API
 SENSOR_THINGS_API_URL = os.getenv('SENSOR_THINGS_API_URL')
 DATASTREAMS: list[Datastream] = [{
-    'name': Template('NDVI - $parcel_id'),
-    'description': Template('NDVI Zonal Stats for Parcel $parcel_id'),
+    'name': Template('NDVI - Treatment Parcel $treatment_parcel_id'),
+    'description': Template('NDVI Zonal Stats for Treatment Parcel $treatment_parcel_id'),
     'observationType': 'http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
     'Sensor': 1,
     'ObservedProperty': 1,
@@ -36,20 +36,36 @@ DATASTREAMS: list[Datastream] = [{
         name='NDVI',
         symbol='NDVI',
         definition='Normalized Difference Vegetation Index'
-    )
+    ),
+    'properties': {
+        'index': {
+            'formula': '(NIR - RED) / (NIR + RED)',
+            'bands': {
+                'NIR': {
+                    'wavelength': '850–880 nm',
+                    'bandwidth': '30 nm',
+                },
+                'RED': {
+                    'wavelength': '640–670 nm',
+                    'bandwidth': '30 nm',
+                }
+            }
+        }
+    }
 },
-    {
-    'name': Template('VARI - $parcel_id'),
-    'description': Template('VARI Zonal Stats for Parcel $parcel_id'),
-    'observationType': 'http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
-    'Sensor': 1,
-    'ObservedProperty': 2,
-    'unitOfMeasurement': UnitOfMeasurement(
-        name='VARI',
-        symbol='VARI',
-        definition='Visible Atmospherically Resistant Index'
-    )
-}]
+    #     {
+    #     'name': Template('VARI - $treatment_parcel_id'),
+    #     'description': Template('VARI Zonal Stats for Parcel $treatment_parcel_id'),
+    #     'observationType': 'http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
+    #     'Sensor': 1,
+    #     'ObservedProperty': 2,
+    #     'unitOfMeasurement': UnitOfMeasurement(
+    #         name='VARI',
+    #         symbol='VARI',
+    #         definition='Visible Atmospherically Resistant Index'
+    #     )
+    # }
+]
 
 
 # WPS REQUESTS

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
 import json
+from datetime import datetime
 from pathlib import Path
 from dataclasses import dataclass, asdict
 import geopandas as gpd
@@ -21,12 +22,18 @@ class Parcels:
     '''Land Parcels Data Class
     Args:
         file_path (Path): Path to Land Parcels File
-        id_field (str): Parcels ID Field
+        land_parcel_id (str): Land Parcel ID
+        field_trial_id (str): Field Trial ID
+        treatment_parcel_id_field (str): Parcels ID Field
         project_id (str): Project ID
+        year (str): Year
     '''
     file_path: Path
-    id_field: str
+    land_parcel_id: str
+    field_trial_id: str
+    treatment_parcel_id_field: str
     project_id: str
+    year: str = str(datetime.now().year)
 
     def __post_init__(self):
         if not os.path.exists(self.file_path):
@@ -44,40 +51,53 @@ class Parcels:
             - Each parcel has a Location
             - [Optional] Each parcel has one or many Datastreams
         '''
+        console.print('[cyan]Creating SensorThingsAPI Things...')
         for feature in self.read_file().iterfeatures(drop_id=True):
-            if self.id_field not in feature['properties']:
+            if self.treatment_parcel_id_field not in feature['properties']:
                 raise KeyError(
-                    f"Parcel ID field '{self.id_field}' does not exist in feature properties")
-            parcel_id = feature['properties'][self.id_field]
+                    f"Treatment Parcel ID field '{self.treatment_parcel_id_field}' does not exist in feature properties")
+            treatment_parcel_id = feature['properties'][self.treatment_parcel_id_field]
             geometry = feature['geometry']
             parcel_thing = Thing(
-                name=f'Land Parcel - {parcel_id}',
-                description=f'Land Parcel - {parcel_id}',
+                name=f'Treatment Parcel - {treatment_parcel_id}',
+                description=f'Treatment Parcel - {treatment_parcel_id}',
                 properties={
+                    'land_parcel_id': self.land_parcel_id,
+                    'field_trial_id': self.field_trial_id,
+                    'treatment_parcel_id': treatment_parcel_id,
                     'project_id': self.project_id,
-                    'parcel_id': parcel_id
+                    'year': self.year,
+
                 },
                 Locations=[
                     Location(
-                        name=f'Location of Parcel - {parcel_id}',
-                        description=f'Polygon Geometry for Parcel - {
-                            parcel_id}',
+                        name=f'Location of Treatment Parcel - {
+                            treatment_parcel_id}',
+                        description=f'Polygon Geometry for Treatment Parcel - {
+                            treatment_parcel_id}',
                         encodingType='application/geo+json',
                         location={"type": "Feature",
-                                  "properties": {"parcel_id": parcel_id},
-                                  "geometry": geometry}
+                                  "geometry": geometry,
+                                  "properties": {'land_parcel_id': self.land_parcel_id,
+                                                 'field_trial_id': self.field_trial_id,
+                                                 'treatment_parcel_id': treatment_parcel_id,
+                                                 'year': self.year
+                                                 }, },
+
                     )
                 ],
                 Datastreams=[
                     # Loop through the Datastreams in the config file
                     Datastream(
-                        name=ds['name'].substitute(parcel_id=parcel_id),
+                        name=ds['name'].substitute(
+                            treatment_parcel_id=treatment_parcel_id),
                         description=ds['description'].substitute(
-                            parcel_id=parcel_id),
+                            treatment_parcel_id=treatment_parcel_id),
                         observationType=ds['observationType'],
                         unitOfMeasurement=ds['unitOfMeasurement'],
                         Sensor={"@iot.id": ds['Sensor']},
-                        ObservedProperty={"@iot.id": ds['ObservedProperty']}
+                        ObservedProperty={"@iot.id": ds['ObservedProperty']},
+                        properties=ds['properties']
                     ) for ds in config.DATASTREAMS
                 ]
             )
@@ -88,6 +108,7 @@ class Parcels:
             things_url = f"{config.SENSOR_THINGS_API_URL}/Things"
             create_sensorthingsapi_thing(
                 things_url, parcel_thing_json)
+        console.print('[green]SensorThingsAPI Things created successfully')
 
     @staticmethod
     def fetch_parcels_geojson(project_id: str) -> dict:
@@ -106,12 +127,15 @@ class Parcels:
             'features': [
                 {
                     'type': 'Feature',
-                    'geometry': parcel['Locations'][0]['location'],
+                    'geometry': parcel['Locations'][0]['location']['geometry'],
                     'properties': {
                         'iot_id': parcel['@iot.id'],
-                        'parcel_id': parcel['properties']['parcel_id'],
-                        'project_id': parcel['properties']['project_id'],
                         'name': parcel['name'],
+                        'land_parcel_id': parcel['properties']['land_parcel_id'],
+                        'field_trial_id': parcel['properties']['field_trial_id'],
+                        'treatment_parcel_id': parcel['properties']['treatment_parcel_id'],
+                        'project_id': parcel['properties']['project_id'],
+                        'year': parcel['properties']['year']
                     }
                 } for parcel in parcels_data
             ]}
@@ -125,11 +149,13 @@ if __name__ == "__main__":
     clear()
     parcels = Parcels(
         file_path=config.LAND_PARCELS_FILE,
-        id_field=config.LAND_PARCELS_ID_FIELD,
+        land_parcel_id='1',
+        field_trial_id='FAIRagro UC6',
+        treatment_parcel_id_field=config.TREATMENT_PARCELS_ID_FIELD,
         project_id=config.PROJECT_ID
     )
     features = parcels.read_file()
-    print(features)
+    # print(features)
     # parcels.create_sensorthings_things()
     parcels_geojson = Parcels.fetch_parcels_geojson(config.PROJECT_ID)
-    # print(parcels_geojson)
+    print(parcels_geojson)
