@@ -154,7 +154,7 @@ if __name__ == "__main__":
         treatment_parcel_id_field=config.TREATMENT_PARCELS_ID_FIELD,
         project_id=config.PROJECT_ID
     )
-    features = parcels.read_file()
+    # features = parcels.read_file()
     # print(features)
     # parcels.create_sensorthings_things()
     parcels_geojson = Parcels.fetch_parcels_geojson(config.PROJECT_ID)

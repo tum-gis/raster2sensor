@@ -73,3 +73,8 @@ WPS_URL = Template(
     '${geoserver_url}/ows?service=WPS&version=1.0.0')
 WPS_GET_CAPABILITIES_URL = Template(
     '${geoserver_url}/ows?service=WPS&version=1.0.0&request=GetCapabilities')
+
+
+# PYGEOAPI
+PYGEOAPI_URL = os.getenv('PYGEOAPI_URL')
+TEST_GEOTIFF = os.path.join(GIS_DATA_DIR, 'vari.tif')
