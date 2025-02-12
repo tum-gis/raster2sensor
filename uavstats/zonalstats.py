@@ -167,10 +167,13 @@ def zonal_stats(feat, input_zone_polygon, input_value_raster):
 
     # Read raster as arrays
     banddataraster = raster.GetRasterBand(1)
+    print(banddataraster)
+    breakpoint()
     dataraster = banddataraster.ReadAsArray(
-        xoff, yoff, xcount, ycount).astype(numpy.float)
+        xoff, yoff, xcount, ycount).astype(numpy.float64)
+    # dataraster = banddataraster.ReadAsArray().astype(numpy.float64)
     bandmask = target_ds.GetRasterBand(1)
-    datamask = bandmask.ReadAsArray(0, 0, xcount, ycount).astype(numpy.float)
+    datamask = bandmask.ReadAsArray(0, 0, xcount, ycount).astype(numpy.float64)
 
     # Mask zone of raster
     zoneraster = numpy.ma.masked_array(dataraster, numpy.logical_not(datamask))

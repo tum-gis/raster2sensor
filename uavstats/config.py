@@ -77,4 +77,4 @@ WPS_GET_CAPABILITIES_URL = Template(
 
 # PYGEOAPI
 PYGEOAPI_URL = os.getenv('PYGEOAPI_URL')
-TEST_GEOTIFF = os.path.join(GIS_DATA_DIR, 'vari.tif')
+TEST_GEOTIFF = os.path.join(GIS_DATA_DIR, 'vari2.tif')

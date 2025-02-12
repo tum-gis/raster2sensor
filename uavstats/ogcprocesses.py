@@ -7,11 +7,11 @@ from uavstats.utils import fetch_data, clear
 from uavstats.parcels import Parcels
 import rasterio
 from rasterio.io import MemoryFile
-# Create a class to handle OGC API - Processes
 from osgeo import ogr, gdal
 
 
-class OGCProcessesClient:
+# Create a class to handle OGC API - Processes
+class OGCAPIProcesses:
     '''OGC API - Processes Class
     Args:
         url (str): URL to OGC API - Processes

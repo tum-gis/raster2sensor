@@ -4,8 +4,9 @@ from rich import print
 from uavstats import config
 from uavstats.utils import fetch_data, clear
 from uavstats.parcels import Parcels
-from uavstats.ogcprocesses import OGCProcessesClient
+from uavstats.ogcprocesses import OGCAPIProcesses
 from uavstats.zonalstats import execute_process
+from uavstats.spatial_tools import read_raster, crop_raster, plot_raster, write_raster
 
 from osgeo import ogr, gdal, osr
 
@@ -27,39 +28,28 @@ def read_geotiff(file_path):
 def main():
     clear()
     test_geotiff_path = config.TEST_GEOTIFF
-    ogc_process = OGCProcessesClient(config.PYGEOAPI_URL)
+    ogc_api_processes = OGCAPIProcesses(config.PYGEOAPI_URL)
     process_id = 'zonal-stats'
-    # ogc_process.fetch_processes()
-    # ogc_process.describe_process(process_id)
 
     #! Load raster file
-    # with rasterio.open(test_geotiff_path) as src:
-    #     with MemoryFile() as memfile:
-    #         with memfile.open(**src.profile) as mem:
-    #             mem.write(src.read())
-    #             raster = mem.read()
-    # dataset = gdal.Open(test_geotiff_path)
-    # band = dataset.GetRasterBand(1)
-    # raster = dataset.ReadAsArray().tolist()
-    # array = band.ReadAsArray().tolist()
     raster = read_geotiff(test_geotiff_path)
-    # print(raster['array'].tolist())
-    # print(gdal_array.LoadFile(test_geotiff_path))
+    # Serialize the raster array to JSON
+    raster_array_json = json.dumps(raster['array'].tolist())
 
-    #! Get Parcels
-    parcels = Parcels(
-        file_path=config.LAND_PARCELS_FILE,
-        land_parcel_id='1',
-        field_trial_id='FAIRagro UC6',
-        treatment_parcel_id_field=config.TREATMENT_PARCELS_ID_FIELD,
-        project_id=config.PROJECT_ID
-    )
+    #! Load Parcels
     parcels_geojson = Parcels.fetch_parcels_geojson(config.PROJECT_ID)
-    # print(type(raster))
-    # parcels_read = ogr.Open(json.dumps(parcels_geojson))
-    # parcels_layer = parcels_read.GetLayer()
-    # feature = parcels_layer.GetFeature(0)
-    # print(feature)
+    # Read the parcels GeoJSON in gdal
+    parcels_ds = ogr.Open(config.PARCELS_GEOJSON)
+    parcels_layer = parcels_ds.GetLayer()
+    print(type(parcels_layer))
+    print(parcels_layer.GetExtent())
+
+    # Test Crop
+    raster_ds = read_raster(test_geotiff_path)
+    plot_raster(raster_ds)
+    cropped_raster_ds = crop_raster(raster_ds, parcels_layer)
+    plot_raster(cropped_raster_ds)
+    write_raster(cropped_raster_ds, "./gis_data/cropped.tif")
 
     # ! Execute Process
     # process_inputs = {
@@ -67,40 +57,9 @@ def main():
     #     'input_zone_polygon': json.dumps(parcels_geojson)
     # }
     # ogc_process.execute_process(process_id, {"inputs": process_inputs})
-    print(raster['array'])
-    execute_process(json.dumps(parcels_geojson),
-                    json.dumps(raster['array'].tolist()))
-
-    # # # ! REVERSE GeoTIFF
-    # # Read numpy array as raster
-    # print('[blue] original array')
     # print(raster['array'])
-
-    # # OGC API Input
-    # load_json = json.loads(json.dumps(raster['array'].tolist()))
-    # input_value_raster = numpy.array(load_json)
-    # print('[blue] recreated json array')
-    # print(input_value_raster)
-
-    # # TEST whether the array is the same as the original
-    # print('[yellow] array comparison')
-    # print(numpy.array_equal(raster['array'], input_value_raster))
-    # new_raster = gdal.GetDriverByName('MEM').Create(
-    #     '', input_value_raster.shape[1], input_value_raster.shape[0], 1, gdal.GDT_Float32)
-    # new_raster.GetRasterBand(1).WriteArray(input_value_raster)
-    # new_raster.SetGeoTransform(raster['geotransform'])
-    # new_raster.SetProjection(raster['projection'])
-    # print('[green] raster array')
-    # print(new_raster)
-    # # Read raster as arrays
-    # print()
-    # print(raster['dataset'].GetProjection())
-
-    # srs = osr.SpatialReference()
-    # srs.ImportFromEPSG(4326)
-    # new_raster.SetProjection(srs.ExportToWkt())
-    # print()
-    # print(new_raster.GetProjection())
+    # execute_process(json.dumps(parcels_geojson),
+    #                 json.dumps(raster['array'].tolist()))
 
 
 main()
