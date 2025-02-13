@@ -2,6 +2,7 @@
 # https://github.com/ECCC-MSC/msc-pygeoapi/blob/master/msc_pygeoapi/process/weather/extract_raster.py
 import json
 import logging
+from rich import print
 from osgeo import gdal, osr, ogr
 # import gdal
 # import osr

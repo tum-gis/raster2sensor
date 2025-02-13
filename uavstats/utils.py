@@ -54,7 +54,7 @@ def fetch_data(url) -> dict:
         response = requests.get(url)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        print(f"[red]An error occurred: {e}")
+        print(f"[red]An error occurred while fetching data: {e}")
         sys.exit(1)
     return response.json()
 
@@ -94,7 +94,7 @@ def create_sensorthingsapi_thing(url: str, thing: dict) -> int:
         response = requests.post(url=url, data=thing, headers=headers)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        print(f"[red]An error occurred: {e}")
+        print(f"[red]An error occurred while fetching SensorThings API: {e}")
         sys.exit(1)
     return response.status_code
 

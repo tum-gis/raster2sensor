@@ -1,10 +1,12 @@
-import os
-import json
+import io
+import base64
+from rich import print
+from math import radians, cos
 import matplotlib.pyplot as plt
-from osgeo import ogr, gdal, osr
+from osgeo import ogr, gdal
 
 
-def read_raster(file_path) -> gdal.Dataset:
+def read_raster(file_path: str) -> gdal.Dataset:
     """Reads a GeoTIFF file and returns a dataset
 
     Args:
@@ -14,8 +16,35 @@ def read_raster(file_path) -> gdal.Dataset:
     return ds
 
 
-def crop_raster(raster_dataset: gdal.Dataset, polygon_layer: ogr.Layer) -> gdal.Dataset:
-    """_summary_
+def apply_buffer_to_extent(extent: tuple, buffer_distance_meters: int = 2) -> tuple:
+    """Apply buffer to extent in meters
+
+    Args:
+        extent (tuple): Extent as (xmin, xmax, ymin, ymax)
+        buffer_distance_meters (float): Buffer distance in meters
+
+    Returns:
+        tuple: Buffered extent as (xmin, xmax, ymin, ymax)
+    """
+    xmin, xmax, ymin, ymax = extent
+
+    # Convert meters to degrees for latitude
+    buffer_distance_lat = buffer_distance_meters / \
+        111320  # 1 degree latitude ~ 111.32 km
+    # Convert meters to degrees for longitude
+    buffer_distance_lon = buffer_distance_meters / \
+        (111320 * cos(radians((ymin + ymax) / 2)))
+
+    xmin -= buffer_distance_lon
+    xmax += buffer_distance_lon
+    ymin -= buffer_distance_lat
+    ymax += buffer_distance_lat
+
+    return xmin, xmax, ymin, ymax
+
+
+def clip_raster(raster_dataset: gdal.Dataset, polygon_layer: ogr.Layer) -> gdal.Dataset:
+    """Clip a raster using a polygon
 
     Args:
         raster_dataset (gdal.Dataset): Raster dataset
@@ -24,51 +53,37 @@ def crop_raster(raster_dataset: gdal.Dataset, polygon_layer: ogr.Layer) -> gdal.
     Returns:
         gdal.Dataset: Cropped raster dataset
     """
-    # Crop a raster using a polygon in GeoJSON format
-    # Open the raster dataset
-    raster = raster_dataset
 
     # Get the extent of the polygon
     polygon_extent = polygon_layer.GetExtent()
-    # Get the extent of the raster
-    gt = raster.GetGeoTransform()
-    width = raster.RasterXSize
-    height = raster.RasterYSize
-    raster_extent = (gt[0], gt[3] + height * gt[5],
-                     gt[0] + width * gt[1], gt[3])
-    # Get the intersection of the two extents
-    intersection = [max(polygon_extent[0], raster_extent[0]), max(polygon_extent[1], raster_extent[1]),
-                    min(polygon_extent[2], raster_extent[2]), min(polygon_extent[3], raster_extent[3])]
-    # Get the intersection coordinates
-    xmin, ymin, xmax, ymax = intersection
-    # Get the geotransform of the raster
-    geotransform = raster.GetGeoTransform()
-    # Get the resolution of the raster
-    xres = geotransform[1]
-    yres = geotransform[5]
-    # Calculate the number of columns and rows
-    cols = int((xmax - xmin) / xres)
-    rows = int(abs((ymax - ymin) / yres))  # ! Changed to absolute value
-    # Create a new raster dataset
-    driver = gdal.GetDriverByName('MEM')
-    output = driver.Create('', cols, rows, 1, gdal.GDT_Float32)
-    # Set the geotransform
-    output.SetGeoTransform((xmin, xres, 0, ymax, 0, yres))
-    # Set the projection
-    output.SetProjection(raster.GetProjection())
-    # Get number of bands
-    num_bands = raster.RasterCount
-    # Loop through all bands
-    for band_num in range(1, num_bands + 1):
-        # Read the raster data for each band
-        band = raster.GetRasterBand(band_num)
-        data = band.ReadAsArray(int(
-            (xmin - raster_extent[0]) / xres), int((ymax - raster_extent[3]) / yres), cols, rows)
-        # Write the raster data to corresponding band
-        output_band = output.GetRasterBand(band_num)
-        output_band.WriteArray(data)
-    # Return the new raster dataset
-    return output
+
+    # Apply buffer to polygon extent
+    xmin, xmax, ymin, ymax = apply_buffer_to_extent(polygon_extent, 2)
+
+    # Get raster projection
+    raster_dataset_srs = raster_dataset.GetProjection()
+    polygon_layer_srs = polygon_layer.GetSpatialRef()
+
+    # Reproject raster if needed
+    if polygon_layer_srs and polygon_layer_srs.ExportToWkt() != raster_dataset_srs:
+        print("Reprojecting raster to match vector CRS...")
+        reprojected_ds = gdal.Warp('', raster_dataset, format='MEM',
+                                   dstSRS=polygon_layer_srs.ExportToWkt())
+        raster_dataset = reprojected_ds
+
+    clipped_ds = gdal.Translate("clipped_ds.tif", raster_dataset, projWin=[
+                                xmin, ymax, xmax, ymin])
+
+    # Close input datasets
+    raster_dataset = None
+    polygon_layer = None
+    # TODO : Logger debug & error messages
+    if clipped_ds:
+        print("[green]✅ Clipping successful, returning GDAL dataset.")
+    else:
+        print("[red]❌ Clipping failed.")
+
+    return clipped_ds  # Return in-memory GDAL dataset
 
 
 def plot_raster(raster_dataset: gdal.Dataset):
@@ -78,9 +93,22 @@ def plot_raster(raster_dataset: gdal.Dataset):
         raster_dataset (gdal.Dataset): Raster dataset
     """
     # Get the raster array
+    if raster_dataset is None:
+        print("❌ Invalid raster dataset.")
+        return
+
     raster_array = raster_dataset.ReadAsArray()
-    # Plot the raster array
-    plt.imshow(raster_array)
+    # TODO Handle multispectral images with more than 3 bands
+    # Check if the raster is multiband
+    if len(raster_array.shape) == 3:
+        # Multiband image
+        raster_array = raster_array.transpose(
+            (1, 2, 0))  # Reorder dimensions for plotting
+        plt.imshow(raster_array)
+    else:
+        # Single band image
+        plt.imshow(raster_array, cmap='gray')
+
     plt.show()
 
 
@@ -95,5 +123,34 @@ def write_raster(raster_dataset: gdal.Dataset, output_file: str):
     driver = gdal.GetDriverByName('GTiff')
     # Create the output raster
     output_raster = driver.CreateCopy(output_file, raster_dataset)
-    # Close the output raster
     output_raster = None
+
+
+def encode_raster_to_base64(raster_dataset: gdal.Dataset) -> str:
+    """Encodes a raster dataset to base64
+
+    Args:
+        raster_dataset (gdal.Dataset): Raster dataset
+
+    Returns:
+        str: Base64 encoded raster
+    """
+    # Convert a GDAL dataset to a compressed GeoTIFF byte stream.
+    mem_driver = gdal.GetDriverByName("GTiff")  # GeoTIFF format
+    mem_buffer = io.BytesIO()
+
+    # Create an in-memory raster
+    mem_raster = mem_driver.CreateCopy(
+        '/vsimem/temp.tif', raster_dataset, options=["COMPRESS=LZW"])
+
+    # Read the in-memory file
+    mem_raster.FlushCache()
+    mem_tiff = gdal.VSIFOpenL('/vsimem/temp.tif', 'rb')
+    mem_tiff_data = gdal.VSIFReadL(
+        1, gdal.VSIFSizeL('/vsimem/temp.tif'), mem_tiff)
+    gdal.VSIFCloseL(mem_tiff)
+
+    # Encode the in-memory file to base64
+    base64_encoded = base64.b64encode(mem_tiff_data).decode('utf-8')
+
+    return base64_encoded

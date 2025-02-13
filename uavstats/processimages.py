@@ -1,14 +1,12 @@
 import json
-import numpy
+from osgeo import gdal
 from rich import print
 from uavstats import config
 from uavstats.utils import fetch_data, clear
 from uavstats.parcels import Parcels
 from uavstats.ogcprocesses import OGCAPIProcesses
 from uavstats.zonalstats import execute_process
-from uavstats.spatial_tools import read_raster, crop_raster, plot_raster, write_raster
-
-from osgeo import ogr, gdal, osr
+from uavstats.spatial_tools import read_raster, clip_raster, plot_raster, write_raster, encode_raster_to_base64
 
 
 def read_geotiff(file_path):
@@ -31,27 +29,30 @@ def main():
     ogc_api_processes = OGCAPIProcesses(config.PYGEOAPI_URL)
     process_id = 'zonal-stats'
 
-    #! Load raster file
+    # !Load raster file
     raster = read_geotiff(test_geotiff_path)
     # Serialize the raster array to JSON
     raster_array_json = json.dumps(raster['array'].tolist())
 
-    #! Load Parcels
+    # !Load Parcels
     parcels_geojson = Parcels.fetch_parcels_geojson(config.PROJECT_ID)
     # Read the parcels GeoJSON in gdal
-    parcels_ds = ogr.Open(config.PARCELS_GEOJSON)
+    parcels_ds = gdal.OpenEx(json.dumps(parcels_geojson))
     parcels_layer = parcels_ds.GetLayer()
-    print(type(parcels_layer))
-    print(parcels_layer.GetExtent())
 
-    # Test Crop
+    # !Clip Raster Image
     raster_ds = read_raster(test_geotiff_path)
-    plot_raster(raster_ds)
-    cropped_raster_ds = crop_raster(raster_ds, parcels_layer)
-    plot_raster(cropped_raster_ds)
-    write_raster(cropped_raster_ds, "./gis_data/cropped.tif")
+    # plot_raster(raster_ds)
+    cropped_raster_ds = clip_raster(raster_ds, parcels_layer)
+    # plot_raster(cropped_raster_ds)
+    # write_raster(cropped_raster_ds, "./gis_data/cropped.tif")
 
-    # ! Execute Process
+    # !Prepare inputs for the process
+    encoded_raster_ds = encode_raster_to_base64(cropped_raster_ds)
+    print(encoded_raster_ds)
+    breakpoint()
+
+    # !Execute Process
     # process_inputs = {
     #     'input_value_raster': json.dumps(raster['array']),
     #     'input_zone_polygon': json.dumps(parcels_geojson)
