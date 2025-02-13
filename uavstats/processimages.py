@@ -7,6 +7,7 @@ from uavstats.parcels import Parcels
 from uavstats.ogcprocesses import OGCAPIProcesses
 from uavstats.zonalstats import execute_process
 from uavstats.spatial_tools import read_raster, clip_raster, plot_raster, write_raster, encode_raster_to_base64
+import sys
 
 
 def read_geotiff(file_path):
@@ -49,8 +50,11 @@ def main():
 
     # !Prepare inputs for the process
     encoded_raster_ds = encode_raster_to_base64(cropped_raster_ds)
-    print(encoded_raster_ds)
-    breakpoint()
+    # Compare actual memory size of the encoded raster vs the original raster
+    original_raster_size = sys.getsizeof(raster['array'])
+    encoded_raster_size = sys.getsizeof(encoded_raster_ds)
+    print(f"Original raster memory size: {original_raster_size} bytes")
+    print(f"Encoded raster memory size: {encoded_raster_size} bytes")
 
     # !Execute Process
     # process_inputs = {

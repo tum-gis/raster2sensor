@@ -146,8 +146,9 @@ def encode_raster_to_base64(raster_dataset: gdal.Dataset) -> str:
     # Read the in-memory file
     mem_raster.FlushCache()
     mem_tiff = gdal.VSIFOpenL('/vsimem/temp.tif', 'rb')
-    mem_tiff_data = gdal.VSIFReadL(
-        1, gdal.VSIFSizeL('/vsimem/temp.tif'), mem_tiff)
+    mem_tiff_stat = gdal.VSIStatL('/vsimem/temp.tif')
+    mem_tiff_size = mem_tiff_stat.size
+    mem_tiff_data = gdal.VSIFReadL(1, mem_tiff_size, mem_tiff)
     gdal.VSIFCloseL(mem_tiff)
 
     # Encode the in-memory file to base64

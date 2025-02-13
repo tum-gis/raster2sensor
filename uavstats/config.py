@@ -20,7 +20,7 @@ OUTPUT_JSON = os.path.join(GIS_DATA_DIR, 'output.json')
 
 
 # LAND PARCELS
-LAND_PARCELS_FILE = os.getenv('LAND_PARCELS_FILE')
+LAND_PARCELS_FILE = os.path.join(GIS_DATA_DIR, 'parcels_wgs84.geojson')
 TREATMENT_PARCELS_ID_FIELD = os.getenv('TREATMENT_PARCELS_ID_FIELD')
 PROJECT_ID = os.getenv('PROJECT_ID')
 
