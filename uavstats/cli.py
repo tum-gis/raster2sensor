@@ -5,7 +5,7 @@ from uavstats import config
 from uavstats import __app_name__, __version__
 from uavstats.utils import clear, timeit
 from uavstats.parcels import Parcels
-from uavstats.ogcprocesses import OGCAPIProcesses
+from uavstats.ogcapiprocesses import OGCAPIProcesses
 
 app = typer.Typer()
 console = Console()

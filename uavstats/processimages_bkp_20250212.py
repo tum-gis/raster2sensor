@@ -4,8 +4,8 @@ from rich import print
 from uavstats import config
 from uavstats.utils import fetch_data, clear
 from uavstats.parcels import Parcels
-from uavstats.ogcprocesses import OGCAPIProcesses
-from uavstats.zonalstats import execute_process
+from uavstats.ogcapiprocesses import OGCAPIProcesses
+from uavstats.processes import execute_process
 
 from osgeo import ogr, gdal, osr
 

@@ -14,7 +14,6 @@ from uavstats.sensorthingsapi import Thing, Location, Datastream
 
 
 install(show_locals=True)
-console = Console()
 
 
 @dataclass
@@ -42,6 +41,7 @@ class Parcels:
 
     def read_file(self) -> gpd.GeoDataFrame:
         '''Reads Land Parcels File'''
+        # TODO Check if the file exists, and if it is a valid shapefile or GeoJSON, raise an error if not
         driver = 'ESRI Shapefile' if self.file_extension == '.shp' else 'GeoJSON'
         return gpd.read_file(self.file_path, driver=driver)
 
@@ -51,7 +51,7 @@ class Parcels:
             - Each parcel has a Location
             - [Optional] Each parcel has one or many Datastreams
         '''
-        console.print('[cyan]Creating SensorThingsAPI Things...')
+        print('[cyan]Creating SensorThingsAPI Things...')
         for feature in self.read_file().iterfeatures(drop_id=True):
             if self.treatment_parcel_id_field not in feature['properties']:
                 raise KeyError(
@@ -108,7 +108,7 @@ class Parcels:
             things_url = f"{config.SENSOR_THINGS_API_URL}/Things"
             create_sensorthingsapi_thing(
                 things_url, parcel_thing_json)
-        console.print('[green]SensorThingsAPI Things created successfully')
+        print('[green]SensorThingsAPI Things created successfully')
 
     @staticmethod
     def fetch_parcels_geojson(project_id: str) -> dict:

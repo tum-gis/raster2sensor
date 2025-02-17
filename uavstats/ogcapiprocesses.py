@@ -1,13 +1,6 @@
-import os
-import json
 from rich import print
 import requests
-from uavstats import config
-from uavstats.utils import fetch_data, clear
-from uavstats.parcels import Parcels
-import rasterio
-from rasterio.io import MemoryFile
-from osgeo import ogr, gdal
+from uavstats.utils import fetch_data
 
 
 # Create a class to handle OGC API - Processes

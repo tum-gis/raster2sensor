@@ -135,16 +135,14 @@ def encode_raster_to_base64(raster_dataset: gdal.Dataset) -> str:
     Returns:
         str: Base64 encoded raster
     """
-    # Convert a GDAL dataset to a compressed GeoTIFF byte stream.
+    # Retrieve the GeoTIFF driver
     mem_driver = gdal.GetDriverByName("GTiff")  # GeoTIFF format
-    mem_buffer = io.BytesIO()
 
     # Create an in-memory raster
-    mem_raster = mem_driver.CreateCopy(
+    mem_driver.CreateCopy(
         '/vsimem/temp.tif', raster_dataset, options=["COMPRESS=LZW"])
 
-    # Read the in-memory file
-    mem_raster.FlushCache()
+    # Read the in-memory file into a byte stream
     mem_tiff = gdal.VSIFOpenL('/vsimem/temp.tif', 'rb')
     mem_tiff_stat = gdal.VSIStatL('/vsimem/temp.tif')
     mem_tiff_size = mem_tiff_stat.size
@@ -155,3 +153,18 @@ def encode_raster_to_base64(raster_dataset: gdal.Dataset) -> str:
     base64_encoded = base64.b64encode(mem_tiff_data).decode('utf-8')
 
     return base64_encoded
+
+
+def decode_base64_to_raster(base64_encoded: str) -> gdal.Dataset:
+    """Decode a base64 encoded raster to a GDAL dataset
+    """
+    # Decode the base64 string
+    decoded_data = base64.b64decode(base64_encoded.encode('utf-8'))
+
+    # Write the decoded data to a temporary file using GDAL's virtual file system
+    gdal.FileFromMemBuffer('/vsimem/temp.tif', decoded_data)
+
+    # Open the temporary file as a GDAL dataset
+    decoded_raster = gdal.Open('/vsimem/temp.tif')
+
+    return decoded_raster
