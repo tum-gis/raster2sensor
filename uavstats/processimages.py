@@ -56,17 +56,39 @@ def main():
     # print(f"Original raster memory size: {original_raster_size} bytes")
     # print(f"Encoded raster memory size: {encoded_raster_size} bytes")
 
-    # !Execute Process
-    # Calculate NDVI
-    ndvi_raster_ds = calculate_ndvi(encoded_raster_ds, 1, 2)
-    output = decode_base64_to_raster(ndvi_raster_ds)
-    write_raster(output, "./gis_data/ndvi.tif")
-    plot_raster(output)
+    # # !Execute Process -> TEST
+    # # Calculate NDVI
+    # ndvi_raster_ds = calculate_ndvi(encoded_raster_ds, 1, 2)
+    # output = decode_base64_to_raster(ndvi_raster_ds)
+    # write_raster(output, "./gis_data/ndvi.tif")
+    # plot_raster(output)
 
-    # Zonal Statistics
-    zonal_stats = zonal_statistics(
-        json.dumps(parcels_geojson), ndvi_raster_ds)
-    print(zonal_stats)
+    # # Zonal Statistics
+    # zonal_stats = zonal_statistics(
+    #     json.dumps(parcels_geojson), encoded_raster_ds)
+    # print(zonal_stats)
+
+    # !Execute Process -> PYGEOAPI
+    # inputs = {
+    #     "input_zone_polygon": json.dumps(parcels_geojson),
+    #     # Ensure the base64 is a string
+    #     "input_value_raster": encoded_raster_ds
+    # }
+    # # Execute the process
+    # output = ogc_api_processes.execute_process(process_id, inputs)
+    # print(output)
+    # # Write to geojson file
+    # with open('./gis_data/test.geojson', 'w') as f:
+    #     json.dump(output['value'], f, indent=2)
+    # NDVI
+    inputs = {
+        "input_value_raster": encoded_raster_ds,
+        "red_band": 1,
+        "nir_band": 2
+    }
+    # Execute the process
+    output = ogc_api_processes.execute_process('ndvi', inputs)
+    plot_raster(decode_base64_to_raster(output['value']))
 
 
 main()

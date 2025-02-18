@@ -1,4 +1,3 @@
-import io
 import base64
 from rich import print
 from math import radians, cos
@@ -64,6 +63,7 @@ def clip_raster(raster_dataset: gdal.Dataset, polygon_layer: ogr.Layer) -> gdal.
     raster_dataset_srs = raster_dataset.GetProjection()
     polygon_layer_srs = polygon_layer.GetSpatialRef()
 
+    # TODO always reproject the rasters to match the vector CRS (4326)
     # Reproject raster if needed
     if polygon_layer_srs and polygon_layer_srs.ExportToWkt() != raster_dataset_srs:
         print("Reprojecting raster to match vector CRS...")

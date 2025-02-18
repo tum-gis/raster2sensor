@@ -42,7 +42,13 @@ class OGCAPIProcesses:
         print(f'Executing OGC API - Process {process_id}')
         # Add code here to execute OGC API - Process
         headers = {'Content-Type': 'application/json'}
-        execution = requests.post(
-            f'{self.url}/processes/{process_id}/execution', headers=headers, json=inputs)
-        # print(dir(execution))
-        print(execution.text)
+        data = {'inputs': inputs}
+        try:
+            execution = requests.post(
+                f'{self.url}/processes/{process_id}/execution', headers=headers, json=data)
+            execution.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            print(f'[red]Error executing process: {e}')
+            print(execution.text)
+            return None
+        return execution.json()

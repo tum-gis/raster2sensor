@@ -1,6 +1,7 @@
 # https://pcjericks.github.io/py-gdalogr-cookbook/raster_layers.html#calculate-zonal-statistics
 # https://github.com/ECCC-MSC/msc-pygeoapi/blob/master/msc_pygeoapi/process/weather/extract_raster.py
 import logging
+import json
 from rich import print
 from osgeo import gdal, ogr
 import numpy
@@ -68,21 +69,22 @@ PROCESS_METADATA = {
 }
 
 
-def zonal_statistics(input_value_polygon: str, input_value_raster: str, stats: list[str] = ["mean", "min", "max", "sum"]) -> dict:
+def zonal_statistics(input_zone_polygon: str, input_value_raster: str, stats: list[str] = ["mean", "min", "max", "sum"]) -> dict:
     """
     Computes zonal statistics for each polygon feature in the vector dataset.
 
     Args:
-        input_value_polygon (str): GeoJSON string
+        input_zone_polygon (str): GeoJSON string
         input_value_raster (str): Base64 encoded raster
         stats (list): List of statistics to compute
     """
     # Open raster and vector datasets
     raster_ds = decode_base64_to_raster(input_value_raster)
-    vector_ds = gdal.OpenEx(input_value_polygon)
+    vector_ds = gdal.OpenEx(input_zone_polygon)
     vector_layer = vector_ds.GetLayer()
 
     # Get raster geotransform and metadata
+    # https://gdal.org/en/stable/tutorials/geotransforms_tut.html
     transform = raster_ds.GetGeoTransform()
     pixel_width, pixel_height = abs(transform[1]), abs(transform[5])
 
@@ -97,7 +99,7 @@ def zonal_statistics(input_value_polygon: str, input_value_raster: str, stats: l
     raster_data = band.ReadAsArray()
 
     # Store results for each polygon
-    results = []
+    results = {'type': 'FeatureCollection', 'features': []}
 
     # Loop through each polygon feature
     for feat in range(vector_layer.GetFeatureCount()):
@@ -116,27 +118,32 @@ def zonal_statistics(input_value_polygon: str, input_value_raster: str, stats: l
         valid_pixels = raster_data[mask_data == 1]
 
         # Compute statistics for the polygon
+
         polygon_stats = {
             "FID": feature.GetFID(),
             "name": feature.GetField('name'),
             "iot_id": feature.GetField('iot_id'),
-            "mean": numpy.mean(valid_pixels) if valid_pixels.size > 0 else None,
-            "min": numpy.min(valid_pixels) if valid_pixels.size > 0 else None,
-            "max": numpy.max(valid_pixels) if valid_pixels.size > 0 else None,
-            "sum": numpy.sum(valid_pixels) if valid_pixels.size > 0 else None,
-            "count": valid_pixels.size,
+            "mean": float(numpy.mean(valid_pixels)) if valid_pixels.size > 0 else None,
+            "min": float(numpy.min(valid_pixels)) if valid_pixels.size > 0 else None,
+            "max": float(numpy.max(valid_pixels)) if valid_pixels.size > 0 else None,
+            "sum": float(numpy.sum(valid_pixels)) if valid_pixels.size > 0 else None,
+            "count": int(valid_pixels.size),
+        }
+        enriched_features = {
+            'type': 'Feature',
+            'geometry': json.loads(feature.GetGeometryRef().ExportToJson()),
+            'properties': polygon_stats
         }
 
-        results.append(polygon_stats)
+        results['features'].append(enriched_features)
 
     # Cleanup
     raster_ds, vector_ds, rasterized = None, None, None
     return results
 
-# TODO: Validate that this is working correctly
-
 
 def calculate_ndvi(input_value_raster: str, red_band: int, nir_band: int) -> str:
+    # TODO: Validate that this is working correctly
     """Calculate NDVI from a raster dataset
 
     Args:
