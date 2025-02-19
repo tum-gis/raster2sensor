@@ -2,7 +2,7 @@ import json
 from osgeo import gdal
 from rich import print
 from uavstats import config
-from uavstats.utils import fetch_data, clear
+from uavstats.utils import fetch_data, clear, timeit
 from uavstats.parcels import Parcels
 from uavstats.ogcapiprocesses import OGCAPIProcesses
 from uavstats.processes import zonal_statistics, calculate_ndvi
@@ -24,6 +24,7 @@ def read_geotiff(file_path):
     }
 
 
+@timeit
 def main():
     clear()
     test_geotiff_path = config.TEST_GEOTIFF
@@ -46,15 +47,16 @@ def main():
     # plot_raster(raster_ds)
     cropped_raster_ds = clip_raster(raster_ds, parcels_layer)
     # plot_raster(cropped_raster_ds)
-    # write_raster(cropped_raster_ds, "./gis_data/cropped.tif")
+    write_raster(cropped_raster_ds, "./gis_data/clipped.tif")
+    print("[cyan]Clipped raster saved to ./gis_data/clipped.tif")
 
     # !Prepare inputs for the process
     encoded_raster_ds = encode_raster_to_base64(cropped_raster_ds)
     # Compare actual memory size of the encoded raster vs the original raster
     original_raster_size = sys.getsizeof(raster['array'])
     encoded_raster_size = sys.getsizeof(encoded_raster_ds)
-    # print(f"Original raster memory size: {original_raster_size} bytes")
-    # print(f"Encoded raster memory size: {encoded_raster_size} bytes")
+    print(f"Original raster memory size: {original_raster_size} bytes")
+    print(f"Encoded raster memory size: {encoded_raster_size} bytes")
 
     # # !Execute Process -> TEST
     # # Calculate NDVI
@@ -80,15 +82,26 @@ def main():
     # # Write to geojson file
     # with open('./gis_data/test.geojson', 'w') as f:
     #     json.dump(output['value'], f, indent=2)
+
+    # Execute the process
     # NDVI
     inputs = {
         "input_value_raster": encoded_raster_ds,
-        "red_band": 1,
-        "nir_band": 2
+        "red_band": 2,
+        "nir_band": 5
     }
-    # Execute the process
     output = ogc_api_processes.execute_process('ndvi', inputs)
     plot_raster(decode_base64_to_raster(output['value']))
+    write_raster(decode_base64_to_raster(
+        output['value']), "./gis_data/ndvi.tif")
+    # Zonal Stats
+    inputs = {
+        "input_zone_polygon": json.dumps(parcels_geojson),
+        "input_value_raster": output['value']
+    }
+    zonal_stats = ogc_api_processes.execute_process(process_id, inputs)
+    with open('./gis_data/zonal_stats.geojson', 'w') as f:
+        json.dump(zonal_stats['value'], f, indent=2)
 
 
 main()

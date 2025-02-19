@@ -33,38 +33,44 @@ DATASTREAMS: list[Datastream] = [{
     'Sensor': 1,
     'ObservedProperty': 1,
     'unitOfMeasurement': UnitOfMeasurement(
-        name='NDVI',
-        symbol='NDVI',
+        name='ndvi',
+        symbol='ndvi',
         definition='Normalized Difference Vegetation Index'
     ),
     'properties': {
-        'index': {
-            'formula': '(NIR - RED) / (NIR + RED)',
-            'bands': {
-                'NIR': {
-                    'wavelength': '850–880 nm',
-                    'bandwidth': '30 nm',
-                },
-                'RED': {
-                    'wavelength': '640–670 nm',
-                    'bandwidth': '30 nm',
-                }
-            }
+        'spectral_index': {
+            'formula': '(NIR - Red) / (NIR + Red)',
+            # 'bands': {                # Wavelengths and bandwidths for the bands are dependent on the sensor
+            #     'NIR': {
+            #         'wavelength': '850–880 nm',
+            #         'bandwidth': '30 nm',
+            #     },
+            #     'RED': {
+            #         'wavelength': '640–670 nm',
+            #         'bandwidth': '30 nm',
+            #     }
+            # }
         }
     }
 },
-    #     {
-    #     'name': Template('VARI - $treatment_parcel_id'),
-    #     'description': Template('VARI Zonal Stats for Parcel $treatment_parcel_id'),
-    #     'observationType': 'http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
-    #     'Sensor': 1,
-    #     'ObservedProperty': 2,
-    #     'unitOfMeasurement': UnitOfMeasurement(
-    #         name='VARI',
-    #         symbol='VARI',
-    #         definition='Visible Atmospherically Resistant Index'
-    #     )
-    # }
+    {
+    'name': Template('NDRE - Treatment Parcel $treatment_parcel_id'),
+    'description': Template('NDRE Zonal Stats for Treatment Parcel $treatment_parcel_id'),
+    'observationType': 'http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
+    'Sensor': 1,
+    'ObservedProperty': 2,
+    'unitOfMeasurement': UnitOfMeasurement(
+        name='ndre',
+        symbol='ndre',
+        definition='Normalized Difference Red Edge Index'
+    ),
+    'properties': {
+        'spectral_index': {
+            'formula': '(NIR - RedEdge) / (NIR + RedEdge)',
+        }
+    }
+},
+
 ]
 
 
@@ -78,4 +84,6 @@ WPS_GET_CAPABILITIES_URL = Template(
 # PYGEOAPI
 PYGEOAPI_URL = os.getenv('PYGEOAPI_URL')
 # TEST_GEOTIFF = os.path.join(GIS_DATA_DIR, 'vari2.tif')
-TEST_GEOTIFF = os.path.join(GIS_DATA_DIR, 'dop20_rgb.tif')
+# TEST_GEOTIFF = os.path.join(GIS_DATA_DIR, 'dop20_rgb.tif')
+TEST_GEOTIFF = os.path.join(
+    GIS_DATA_DIR, 'DOP_AD24_TD_D4_V2_M600-Tetracam_3cm_UTM32.tif')

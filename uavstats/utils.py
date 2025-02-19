@@ -79,19 +79,19 @@ def fetch_sensorthingsapi(url) -> list:
     return fetched_entities
 
 
-def create_sensorthingsapi_thing(url: str, thing: dict) -> int:
-    """Create a SensorThingsAPI Thing
+def create_sensorthingsapi_entity(url: str, entity: dict) -> int:
+    """Create a SensorThingsAPI Entity
 
     Args:
         url (_type_): API URL
-        thing (_type_): Thing data
+        entity (_type_): Entity data
 
     Returns:
         response.status_code (_type_): API response status code
     """
     headers = {'Content-Type': 'application/json;charset=UTF-8'}
     try:
-        response = requests.post(url=url, data=thing, headers=headers)
+        response = requests.post(url=url, data=entity, headers=headers)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
         print(f"[red]An error occurred while fetching SensorThings API: {e}")

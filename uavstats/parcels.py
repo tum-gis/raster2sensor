@@ -9,7 +9,7 @@ from rich import print
 from rich.console import Console
 from rich.traceback import install
 from uavstats import config
-from uavstats.utils import clear, get_file_extension, create_sensorthingsapi_thing, fetch_sensorthingsapi
+from uavstats.utils import clear, get_file_extension, create_sensorthingsapi_entity, fetch_sensorthingsapi
 from uavstats.sensorthingsapi import Thing, Location, Datastream
 
 
@@ -106,9 +106,19 @@ class Parcels:
                 asdict(parcel_thing), indent=2, ensure_ascii=True)
             # print(parcel_thing_json)
             things_url = f"{config.SENSOR_THINGS_API_URL}/Things"
-            create_sensorthingsapi_thing(
+            create_sensorthingsapi_entity(
                 things_url, parcel_thing_json)
         print('[green]SensorThingsAPI Things created successfully')
+
+    # !TODO Create additional datastreams for each existing parcel
+
+    def create_additional_datastreams(self, datastreams: list[Datastream]):
+        """Create additional Datastreams for each existing parcel
+        Fetch existing parcels from the SensorThingsAPI and create additional Datastreams for each parcel
+        Args:
+            datastreams (list[Datastream]): List of Datastreams
+        """
+        pass
 
     @staticmethod
     def fetch_parcels_geojson(project_id: str) -> dict:
@@ -157,5 +167,5 @@ if __name__ == "__main__":
     features = parcels.read_file()
     # print(features)
     # parcels.create_sensorthings_things()
-    parcels_geojson = Parcels.fetch_parcels_geojson(config.PROJECT_ID)
-    print(parcels_geojson)
+    # parcels_geojson = Parcels.fetch_parcels_geojson(config.PROJECT_ID)
+    # print(parcels_geojson)
