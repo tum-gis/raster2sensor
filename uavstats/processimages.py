@@ -27,9 +27,15 @@ def read_geotiff(file_path):
 @timeit
 def main():
     clear()
+    parcels = Parcels(
+        file_path=config.LAND_PARCELS_FILE,
+        land_parcel_id='1',
+        field_trial_id='FAIRagro UC6',
+        treatment_parcel_id_field=config.TREATMENT_PARCELS_ID_FIELD,
+        project_id=config.PROJECT_ID
+    )
     test_geotiff_path = config.TEST_GEOTIFF
     ogc_api_processes = OGCAPIProcesses(config.PYGEOAPI_URL)
-    process_id = 'zonal-stats'
 
     # !Load raster file
     raster = read_geotiff(test_geotiff_path)
@@ -37,7 +43,7 @@ def main():
     raster_array_json = json.dumps(raster['array'].tolist())
 
     # !Load Parcels
-    parcels_geojson = Parcels.fetch_parcels_geojson(config.PROJECT_ID)
+    parcels_geojson = parcels.fetch_parcels_geojson(config.PROJECT_ID)
     # Read the parcels GeoJSON in gdal
     parcels_ds = gdal.OpenEx(json.dumps(parcels_geojson))
     parcels_layer = parcels_ds.GetLayer()
@@ -91,17 +97,21 @@ def main():
         "nir_band": 5
     }
     output = ogc_api_processes.execute_process('ndvi', inputs)
-    plot_raster(decode_base64_to_raster(output['value']))
+    # plot_raster(decode_base64_to_raster(output['value']))
     write_raster(decode_base64_to_raster(
         output['value']), "./gis_data/ndvi.tif")
     # Zonal Stats
     inputs = {
         "input_zone_polygon": json.dumps(parcels_geojson),
-        "input_value_raster": output['value']
+        "input_value_raster": output['value'],
+        "raster_data": output['id']
     }
-    zonal_stats = ogc_api_processes.execute_process(process_id, inputs)
+    zonal_stats = ogc_api_processes.execute_process('zonal-stats', inputs)
     with open('./gis_data/zonal_stats.geojson', 'w') as f:
         json.dump(zonal_stats['value'], f, indent=2)
+
+    # Create Observations
+    parcels.create_observations(zonal_stats, '2024-03-06')
 
 
 main()

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from dataclasses import dataclass, asdict
-from typing import List, Dict
+from typing import List, Dict, Optional
 from rich import print
 
 
@@ -25,9 +25,9 @@ class Datastream:
     name: str
     description: str
     observationType: str
-    unitOfMeasurement: UnitOfMeasurement
     Sensor: int
     ObservedProperty: int
+    unitOfMeasurement: UnitOfMeasurement = None
     properties: Dict[str, object] = None
 
 

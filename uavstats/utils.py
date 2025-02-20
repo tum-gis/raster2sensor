@@ -94,7 +94,9 @@ def create_sensorthingsapi_entity(url: str, entity: dict) -> int:
         response = requests.post(url=url, data=entity, headers=headers)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        print(f"[red]An error occurred while fetching SensorThings API: {e}")
+        print(
+            f"[red]An error occurred while posting to the SensorThings API: {e}")
+        print(response.json())
         sys.exit(1)
     return response.status_code
 

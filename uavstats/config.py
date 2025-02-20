@@ -33,12 +33,14 @@ DATASTREAMS: list[Datastream] = [{
     'Sensor': 1,
     'ObservedProperty': 1,
     'unitOfMeasurement': UnitOfMeasurement(
-        name='ndvi',
-        symbol='ndvi',
+        name='',
+        symbol='',
         definition='Normalized Difference Vegetation Index'
     ),
     'properties': {
+        'raster_data': 'NDVI',
         'spectral_index': {
+            'name': 'NDVI',
             'formula': '(NIR - Red) / (NIR + Red)',
             # 'bands': {                # Wavelengths and bandwidths for the bands are dependent on the sensor
             #     'NIR': {
@@ -60,12 +62,14 @@ DATASTREAMS: list[Datastream] = [{
     'Sensor': 1,
     'ObservedProperty': 2,
     'unitOfMeasurement': UnitOfMeasurement(
-        name='ndre',
-        symbol='ndre',
+        name='',
+        symbol='',
         definition='Normalized Difference Red Edge Index'
     ),
     'properties': {
+        'raster_data': 'NDRE',
         'spectral_index': {
+            'name': 'NDRE',
             'formula': '(NIR - RedEdge) / (NIR + RedEdge)',
         }
     }
