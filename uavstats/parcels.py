@@ -154,16 +154,16 @@ class Parcels:
         """
         pass
 
-    def create_observations(self, zonal_stats: dict, flight_date: str):
+    def create_observations(self, zonal_stats: dict, flight_timestamp: str):
         """Create Observations for each parcel
         Args:
             zonal_stats (dict): Zonal Statistics
-            flight_date (str): Flight Date
+            flight_timestamp (str): Flight Timestamp in local timezone
         """
         result_time = zonal_stats.get('result_time')
         zonal_stats_features = (zonal_stats.get('value')).get('features')
         raster_data = (zonal_stats.get('raster_data')).lower()
-        flight_date = datetime.strptime(flight_date, '%Y-%m-%d')
+        # flight_timestamp = datetime.strptime(flight_timestamp, '%Y-%m-%d')
 
         # Fetch Things + Datastreams
         things = fetch_sensorthingsapi(
@@ -185,11 +185,11 @@ class Parcels:
             # print(f"[cyan]Target Datastream:")
             # print(target_datastream[0])
 
-            # Europe/Berlin timezone for the flight date
-            flight_date = flight_date.replace(
-                tzinfo=timezone(timedelta(hours=1)))
+            # # Europe/Berlin timezone for the flight date
+            # flight_timestamp = flight_timestamp.replace(
+            #     tzinfo=timezone(timedelta(hours=1)))
             observation = {
-                "phenomenonTime": flight_date.astimezone().isoformat(),
+                "phenomenonTime": flight_timestamp,
                 "resultTime": result_time,
                 "result": feature['properties']['mean'],
                 "Datastream": {"@iot.id": target_datastream[0]['@iot.id']},

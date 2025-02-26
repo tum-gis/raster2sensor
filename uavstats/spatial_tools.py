@@ -1,3 +1,4 @@
+import os
 import base64
 from rich import print
 from math import radians, cos
@@ -11,6 +12,8 @@ def read_raster(file_path: str) -> gdal.Dataset:
     Args:
         file_path (str): Path to the GeoTIFF file
     """
+    # Get name from file path
+    print(f"[cyan] Processing Raster: {os.path.basename(file_path)}")
     ds = gdal.Open(file_path)
     return ds
 

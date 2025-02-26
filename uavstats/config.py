@@ -27,8 +27,8 @@ PROJECT_ID = os.getenv('PROJECT_ID')
 # SENSOR THINGS API
 SENSOR_THINGS_API_URL = os.getenv('SENSOR_THINGS_API_URL')
 DATASTREAMS: list[Datastream] = [{
-    'name': Template('NDVI - Treatment Parcel $treatment_parcel_id'),
-    'description': Template('NDVI Zonal Stats for Treatment Parcel $treatment_parcel_id'),
+    'name': Template('Mean NDVI - Treatment Parcel $treatment_parcel_id'),
+    'description': Template('Mean NDVI for Treatment Parcel $treatment_parcel_id'),
     'observationType': 'http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
     'Sensor': 1,
     'ObservedProperty': 1,
@@ -56,8 +56,8 @@ DATASTREAMS: list[Datastream] = [{
     }
 },
     {
-    'name': Template('NDRE - Treatment Parcel $treatment_parcel_id'),
-    'description': Template('NDRE Zonal Stats for Treatment Parcel $treatment_parcel_id'),
+    'name': Template('Mean NDRE - Treatment Parcel $treatment_parcel_id'),
+    'description': Template('Mean NDRE for Treatment Parcel $treatment_parcel_id'),
     'observationType': 'http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
     'Sensor': 1,
     'ObservedProperty': 2,

@@ -10,18 +10,18 @@ from uavstats.spatial_tools import read_raster, clip_raster, plot_raster, write_
 import sys
 
 
-def read_geotiff(file_path):
-    ds = gdal.Open(file_path)
-    geotransform = ds.GetGeoTransform()
-    projection = ds.GetProjection()
-    band = ds.GetRasterBand(1)
-    arr = band.ReadAsArray()
-    return {
-        "dataset": ds,
-        "array": arr,
-        "geotransform": geotransform,
-        "projection": projection
-    }
+# def read_geotiff(file_path):
+#     ds = gdal.Open(file_path)
+#     geotransform = ds.GetGeoTransform()
+#     projection = ds.GetProjection()
+#     band = ds.GetRasterBand(1)
+#     arr = band.ReadAsArray()
+#     return {
+#         "dataset": ds,
+#         "array": arr,
+#         "geotransform": geotransform,
+#         "projection": projection
+#     }
 
 
 @timeit
@@ -37,16 +37,16 @@ def main():
     test_geotiff_path = config.TEST_GEOTIFF
     ogc_api_processes = OGCAPIProcesses(config.PYGEOAPI_URL)
 
-    # !Load raster file
-    raster = read_geotiff(test_geotiff_path)
-    # Serialize the raster array to JSON
-    raster_array_json = json.dumps(raster['array'].tolist())
-
     # !Load Parcels
     parcels_geojson = parcels.fetch_parcels_geojson(config.PROJECT_ID)
     # Read the parcels GeoJSON in gdal
     parcels_ds = gdal.OpenEx(json.dumps(parcels_geojson))
     parcels_layer = parcels_ds.GetLayer()
+
+    # # !Load raster file
+    # raster = read_geotiff(test_geotiff_path)
+    # # Serialize the raster array to JSON
+    # raster_array_json = json.dumps(raster['array'].tolist())
 
     # !Clip Raster Image
     raster_ds = read_raster(test_geotiff_path)
@@ -59,10 +59,11 @@ def main():
     # !Prepare inputs for the process
     encoded_raster_ds = encode_raster_to_base64(cropped_raster_ds)
     # Compare actual memory size of the encoded raster vs the original raster
-    original_raster_size = sys.getsizeof(raster['array'])
+    original_raster_size = sys.getsizeof(cropped_raster_ds)
     encoded_raster_size = sys.getsizeof(encoded_raster_ds)
     print(f"Original raster memory size: {original_raster_size} bytes")
     print(f"Encoded raster memory size: {encoded_raster_size} bytes")
+    breakpoint()
 
     # # !Execute Process -> TEST
     # # Calculate NDVI
@@ -111,7 +112,7 @@ def main():
         json.dump(zonal_stats['value'], f, indent=2)
 
     # Create Observations
-    parcels.create_observations(zonal_stats, '2024-03-06')
+    # parcels.create_observations(zonal_stats, '2024-03-06')
 
 
 main()

@@ -7,14 +7,14 @@ sensors = {
 
 }
 observed_properties = [
-    {
-        "description": "Visible Atmospherically Resistant Index (VARI)",
-        "definition": "https://eos.com/blog/vegetation-indices/",
-        "name": "VARI",
-    },
+
     {
         "description": "Normalized Difference Vegetation Index (NDVI)",
-        "definition": "https://eos.com/blog/vegetation-indices/",
+        "definition": "https://eos.com/make-an-analysis/ndvi/",
         "name": "NDVI",
-    }
+    },    {
+        "description": "Normalized Difference Red Edge Index (NDRE)",
+        "definition": "https://eos.com/make-an-analysis/ndre/",
+        "name": "NDRE",
+    },
 ]
