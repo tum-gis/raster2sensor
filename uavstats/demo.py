@@ -9,6 +9,7 @@ from uavstats.ogcapiprocesses import OGCAPIProcesses
 from uavstats.processes import zonal_statistics, calculate_ndvi
 from uavstats.spatial_tools import read_raster, clip_raster, plot_raster, write_raster, encode_raster_to_base64, decode_base64_to_raster
 import sys
+from pathlib import Path
 
 
 @dataclass
@@ -19,25 +20,28 @@ class RasterImage:
 
 @timeit
 def main(raster_images: list[RasterImage], process: str, bands: dict):
-
     parcels = Parcels(
-        file_path=config.LAND_PARCELS_FILE,
+        file_path=Path(config.LAND_PARCELS_FILE),
         land_parcel_id='1',
         field_trial_id='FAIRagro UC6',
-        treatment_parcel_id_field=config.TREATMENT_PARCELS_ID_FIELD,
-        project_id=config.PROJECT_ID
+        treatment_parcel_id_field=config.TREATMENT_PARCELS_ID_FIELD if config.TREATMENT_PARCELS_ID_FIELD is not None else "",
+        project_id=config.PROJECT_ID if config.PROJECT_ID is not None else ""
     )
 
+    if config.PYGEOAPI_URL is None:
+        raise ValueError(
+            "PYGEOAPI_URL must be set in the config and cannot be None.")
     ogc_api_processes = OGCAPIProcesses(config.PYGEOAPI_URL)
 
     # *Load Parcels
-    parcels_geojson = parcels.fetch_parcels_geojson(config.PROJECT_ID)
+    parcels_geojson = parcels.fetch_parcels_geojson(
+        config.PROJECT_ID if config.PROJECT_ID is not None else "")
     parcels_ds = gdal.OpenEx(json.dumps(parcels_geojson))
     parcels_layer = parcels_ds.GetLayer()
 
     for raster_image in raster_images:
         # *Load raster file
-        raster_ds = read_raster(raster_image.get('path'))
+        raster_ds = read_raster(raster_image.get('path'))  # type: ignore
 
         # *Clip Raster Image
         clipped_raster_ds = clip_raster(raster_ds, parcels_layer)
@@ -68,7 +72,8 @@ def main(raster_images: list[RasterImage], process: str, bands: dict):
             print("[red]Error executing zonal statistics")
             sys.exit(1)
         # *Create Observations
-        parcels.create_observations(zonal_stats, raster_image.get('timestamp'))
+        parcels.create_observations(
+            zonal_stats, raster_image.get('timestamp'))  # type: ignore
 
 
 if __name__ == '__main__':

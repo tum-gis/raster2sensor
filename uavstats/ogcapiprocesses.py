@@ -49,6 +49,6 @@ class OGCAPIProcesses:
             execution.raise_for_status()
         except requests.exceptions.RequestException as e:
             print(f'[red]Error executing process: {e}')
-            print(execution.text)
+            print(execution.text)  # type: ignore
             return None
         return execution.json()

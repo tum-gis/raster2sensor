@@ -191,7 +191,11 @@ class Parcels:
             observation = {
                 "phenomenonTime": flight_timestamp,
                 "resultTime": result_time,
-                "result": feature['properties']['mean'],
+                "result": {"mean": feature['properties']['mean'],
+                           "min": feature['properties']['min'],
+                           "max": feature['properties']['max'],
+                           "stddev": feature['properties']['stddev'],
+                           "median": "feature['properties']['median']"},
                 "Datastream": {"@iot.id": target_datastream[0]['@iot.id']},
 
             }
