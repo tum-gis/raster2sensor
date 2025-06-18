@@ -113,6 +113,28 @@ if __name__ == '__main__':
         "red_edge_band": 3,
         "nir_band": 5
     }
+    cired_edge_bands = {
+        "red_edge_band": 3,
+        "nir_band": 5
+    }
+    gndvi_bands = {
+        "green_band": 1,
+        "nir_band": 5
+    }
+    savi_bands = {
+        "red_band": 2,
+        "nir_band": 5
+    }
+    mcari_bands = {
+        "red_band": 2,
+        "green_band": 1,
+        "nir_band": 5
+    }
 
     # main(raster_images, 'ndvi', ndvi_bands)
     # main(raster_images, 'ndre', ndre_bands)
+    # main(raster_images, 'cired-edge', cired_edge_bands) #! BUG Processing: list out of range
+    main(raster_images, 'gndvi', gndvi_bands)
+    main(raster_images, 'savi', savi_bands)
+    main(raster_images, 'mcari', mcari_bands)  # ! BUG verify calculation
+    print("[green]Process completed successfully![/green]")

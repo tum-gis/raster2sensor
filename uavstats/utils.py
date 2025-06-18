@@ -6,6 +6,7 @@ import requests
 from functools import wraps
 from rich import print
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
 
 def clear():
@@ -29,8 +30,8 @@ def get_file_name(file_path: str) -> str:
     return os.path.splitext(os.path.basename(file_path))[0]
 
 
-def get_file_extension(file_path: str) -> str:
-    return os.path.splitext(file_path)[1]
+def get_file_extension(file_path: Path) -> str:
+    return file_path.suffix
 
 
 def get_files(input_dir: str, extensions: list) -> list:
@@ -90,13 +91,18 @@ def create_sensorthingsapi_entity(url: str, entity: dict) -> int:
         response.status_code (_type_): API response status code
     """
     headers = {'Content-Type': 'application/json;charset=UTF-8'}
+    response = None
     try:
         response = requests.post(url=url, data=entity, headers=headers)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
         print(
             f"[red]An error occurred while posting to the SensorThings API: {e}")
-        print(response.json())
+        if response is not None:
+            try:
+                print(response.json())
+            except Exception:
+                print(response.text)
         sys.exit(1)
     return response.status_code
 

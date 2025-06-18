@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-from dataclasses import dataclass, asdict
-from typing import List, Dict, Optional
+from dataclasses import dataclass, asdict, field
+from typing import Any, List, Dict, Optional
 from rich import print
+from string import Template
 
 
 @dataclass
@@ -9,8 +10,8 @@ class Location:
     name: str
     description: str
     encodingType: str
-    location: Dict[str, object]
-    properties: Dict[str, object] = None
+    location: dict[str, object]
+    properties: dict[str, object] = None
 
 
 @dataclass
@@ -22,20 +23,20 @@ class UnitOfMeasurement:
 
 @dataclass
 class Datastream:
-    name: str
-    description: str
+    name: Template | str
+    description: Template | str
     observationType: str
-    Sensor: int
-    ObservedProperty: int
-    unitOfMeasurement: UnitOfMeasurement = None
-    properties: Dict[str, object] = None
+    Sensor: dict[str, int]
+    ObservedProperty: dict[str, int]
+    unitOfMeasurement: UnitOfMeasurement | None
+    properties: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class Thing:
     name: str
     description: str
-    properties: Dict[str, object]
+    properties: dict[str, object]
     Locations: List[Location]
     Datastreams: List[Datastream]
 

@@ -3,7 +3,8 @@ import os
 import json
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
+from typing import Optional
 import geopandas as gpd
 from rich import print
 from rich.console import Console
@@ -14,6 +15,11 @@ from uavstats.sensorthingsapi import Thing, Location, Datastream
 
 
 install(show_locals=True)
+
+
+@dataclass
+class DatastreamAppend(Datastream):
+    Thing: Optional[dict[str, int]] = None
 
 
 @dataclass
@@ -32,7 +38,7 @@ class Parcels:
     field_trial_id: str
     treatment_parcel_id_field: str
     project_id: str
-    year: str = str(datetime.now().year)
+    year: str = field(default_factory=lambda: str(datetime.now().year))
 
     def __post_init__(self):
         if not os.path.exists(self.file_path):
@@ -88,17 +94,15 @@ class Parcels:
                 ],
                 Datastreams=[
                     # Loop through the Datastreams in the config file
-                    Datastream(
-                        name=ds['name'].substitute(
+                    Datastream(name=ds.name.substitute(
+                        treatment_parcel_id=treatment_parcel_id),
+                        description=ds.description.substitute(
                             treatment_parcel_id=treatment_parcel_id),
-                        description=ds['description'].substitute(
-                            treatment_parcel_id=treatment_parcel_id),
-                        observationType=ds.get('observationType'),
-                        unitOfMeasurement=ds.get('unitOfMeasurement'),
-                        Sensor={"@iot.id": ds.get('Sensor')},
-                        ObservedProperty={
-                            "@iot.id": ds.get('ObservedProperty')},
-                        properties=ds.get('properties', None)
+                        observationType=ds.observationType,
+                        unitOfMeasurement=ds.unitOfMeasurement,
+                        Sensor=ds.Sensor,
+                        ObservedProperty=ds.ObservedProperty,
+                        properties=ds.properties
                     ) for ds in config.DATASTREAMS
                 ]
             )
@@ -107,6 +111,7 @@ class Parcels:
                 asdict(parcel_thing), indent=2, ensure_ascii=True)
             # print(parcel_thing_json)
             things_url = f"{config.SENSOR_THINGS_API_URL}/Things"
+
             create_sensorthingsapi_entity(
                 things_url, parcel_thing_json)
         print('[green]SensorThingsAPI Things created successfully')
@@ -145,14 +150,62 @@ class Parcels:
             json.dump(parcels_geojson, f, indent=2)
         return parcels_geojson
 
-    def create_additional_datastreams(self, datastreams: list[Datastream]):
+    def add_datastreams(self, field_trial_id, datastreams: list[Datastream]):
         # !TODO Create additional datastreams for each existing parcel
         """Create additional Datastreams for each existing parcel
         Fetch existing parcels from the SensorThingsAPI and create additional Datastreams for each parcel
         Args:
             datastreams (list[Datastream]): List of Datastreams
         """
-        pass
+        # Fetch all things where project_id matches
+
+        things = fetch_sensorthingsapi(
+            f"{config.SENSOR_THINGS_API_URL}/Things?$filter=startswith(properties/field_trial_id,%27{field_trial_id}%27)")
+        print(
+            f"[cyan]Fetched {len(things)} things for field trial '{field_trial_id}'")
+        # Loop through the fetched things
+        post_datastreams = []
+        for thing in things:
+            # Create a new Datastream for each thing
+            for ds in datastreams:
+                new_datastream = DatastreamAppend(
+                    name=ds.name.substitute(
+                        treatment_parcel_id=thing['properties']['treatment_parcel_id']),
+                    description=ds.description.substitute(
+                        treatment_parcel_id=thing['properties']['treatment_parcel_id']),
+                    observationType=ds.observationType,
+                    unitOfMeasurement=ds.unitOfMeasurement,
+                    Sensor=ds.Sensor,
+                    ObservedProperty=ds.ObservedProperty,
+                    properties=ds.properties,
+                    # Associate with the Thing
+                    Thing={"@iot.id": thing['@iot.id']}
+                )
+
+                batch_request = {
+                    "id": len(post_datastreams)+1,
+                    "method": "post",
+                    "url": "Datastreams",
+                    "body": asdict(new_datastream)
+                }
+                post_datastreams.append(batch_request)
+
+                # datastream_json = json.dumps(
+                #     asdict(new_datastream), indent=2, ensure_ascii=True)
+                # datastreams_url = f"{config.SENSOR_THINGS_API_URL}/Datastreams"
+                # create_sensorthingsapi_entity(datastreams_url, datastream_json)
+        print(
+            f"[cyan]Creating {len(post_datastreams)} new datastreams for field trial '{field_trial_id}'")
+        batch_url = f"{config.SENSOR_THINGS_API_URL}/$batch"
+        # Post the datastreams to the SensorThingsAPI
+        response = create_sensorthingsapi_entity(
+            batch_url, json.dumps({'requests': post_datastreams}))
+        if response != 200:
+            print(f"[red]Failed to create datastreams: {response.text}")
+            return
+
+        print(
+            f"[green]Successfully created {len(post_datastreams)} new datastreams for field trial '{field_trial_id}'")
 
     def create_observations(self, zonal_stats: dict, flight_timestamp: str):
         """Create Observations for each parcel
@@ -161,8 +214,16 @@ class Parcels:
             flight_timestamp (str): Flight Timestamp in local timezone
         """
         result_time = zonal_stats.get('result_time')
-        zonal_stats_features = (zonal_stats.get('value')).get('features')
-        raster_data = (zonal_stats.get('raster_data')).lower()
+        value = zonal_stats.get('value')
+        if value is not None:
+            zonal_stats_features = value.get('features')
+        else:
+            raise ValueError("zonal_stats['value'] is missing or None")
+        raster_data = zonal_stats.get('raster_data')
+        if raster_data is not None:
+            raster_data = raster_data.lower()
+        else:
+            raise ValueError("zonal_stats['raster_data'] is missing or None")
         # flight_timestamp = datetime.strptime(flight_timestamp, '%Y-%m-%d')
 
         # Fetch Things + Datastreams
@@ -195,7 +256,7 @@ class Parcels:
                            "min": feature['properties']['min'],
                            "max": feature['properties']['max'],
                            "stddev": feature['properties']['stddev'],
-                           "median": "feature['properties']['median']"},
+                           "median": feature['properties']['median']},
                 "Datastream": {"@iot.id": target_datastream[0]['@iot.id']},
 
             }
@@ -218,15 +279,24 @@ class Parcels:
 
 if __name__ == "__main__":
     clear()
+    if config.TREATMENT_PARCELS_ID_FIELD is None:
+        raise ValueError("TREATMENT_PARCELS_ID_FIELD must be set in config")
+    if config.PROJECT_ID is None:
+        raise ValueError("PROJECT_ID must be set in config")
     parcels = Parcels(
-        file_path=config.LAND_PARCELS_FILE,
+        file_path=Path(config.LAND_PARCELS_FILE),
         land_parcel_id='1',
         field_trial_id='FAIRagro UC6',
         treatment_parcel_id_field=config.TREATMENT_PARCELS_ID_FIELD,
-        project_id=config.PROJECT_ID
+        project_id=config.PROJECT_ID,
+        year='2024'
     )
-    features = parcels.read_file()
+    # features = parcels.read_file()
     # print(features)
-    # parcels.create_sensorthings_things()
     # parcels_geojson = Parcels.fetch_parcels_geojson(config.PROJECT_ID)
     # print(parcels_geojson)
+    # parcels.create_sensorthings_things()
+    # parcels.add_datastreams(
+    #     field_trial_id='FAIRagro UC6',
+    #     datastreams=config.ADDITIONAL_DATASTREAMS
+    # )

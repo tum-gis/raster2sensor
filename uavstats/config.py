@@ -26,63 +26,182 @@ PROJECT_ID = os.getenv('PROJECT_ID')
 
 # SENSOR THINGS API
 SENSOR_THINGS_API_URL = os.getenv('SENSOR_THINGS_API_URL')
-DATASTREAMS: list[Datastream] = [{
-    'name': Template('Mean NDVI - Treatment Parcel $treatment_parcel_id'),
-    'description': Template('Mean NDVI for Treatment Parcel $treatment_parcel_id'),
-    'observationType': 'http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
-    'Sensor': 1,
-    'ObservedProperty': 1,
-    'unitOfMeasurement': UnitOfMeasurement(
-        name='',
-        symbol='',
-        definition='Normalized Difference Vegetation Index'
-    ),
-    'properties': {
-        'raster_data': 'NDVI',
-        'spectral_index': {
-            'name': 'NDVI',
-            'formula': '(NIR - Red) / (NIR + Red)',
-            # 'bands': {                # Wavelengths and bandwidths for the bands are dependent on the sensor
-            #     'NIR': {
-            #         'wavelength': '850–880 nm',
-            #         'bandwidth': '30 nm',
-            #     },
-            #     'RED': {
-            #         'wavelength': '640–670 nm',
-            #         'bandwidth': '30 nm',
-            #     }
-            # }
-        }
-    }
-},
-    {
-    'name': Template('Mean NDRE - Treatment Parcel $treatment_parcel_id'),
-    'description': Template('Mean NDRE for Treatment Parcel $treatment_parcel_id'),
-    'observationType': 'http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
-    'Sensor': 1,
-    'ObservedProperty': 2,
-    'unitOfMeasurement': UnitOfMeasurement(
-        name='',
-        symbol='',
-        definition='Normalized Difference Red Edge Index'
-    ),
-    'properties': {
-        'raster_data': 'NDRE',
-        'spectral_index': {
-            'name': 'NDRE',
-            'formula': '(NIR - RedEdge) / (NIR + RedEdge)',
-        }
-    }
-},
+# DATASTREAMS: list[Datastream] = [{
+#     'name': Template('NDVI - Treatment Parcel $treatment_parcel_id'),
+#     'description': Template('NDVI for Treatment Parcel $treatment_parcel_id'),
+#     'observationType': 'http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
+#     'Sensor': 1,
+#     'ObservedProperty': 1,
+#     'unitOfMeasurement': UnitOfMeasurement(
+#         name='',
+#         symbol='',
+#         definition='Normalized Difference Vegetation Index'
+#     ),
+#     'properties': {
+#         'raster_data': 'NDVI',
+#         'spectral_index': {
+#             'name': 'NDVI',
+#             'formula': '(NIR - Red) / (NIR + Red)',
+#             # 'bands': {                # Wavelengths and bandwidths for the bands are dependent on the sensor
+#             #     'NIR': {
+#             #         'wavelength': '850–880 nm',
+#             #         'bandwidth': '30 nm',
+#             #     },
+#             #     'RED': {
+#             #         'wavelength': '640–670 nm',
+#             #         'bandwidth': '30 nm',
+#             #     }
+#             # }
+#         }
+#     }
+# },
+#     {
+#     'name': Template('NDRE - Treatment Parcel $treatment_parcel_id'),
+#     'description': Template('NDRE for Treatment Parcel $treatment_parcel_id'),
+#     'observationType': 'http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
+#     'Sensor': 1,
+#     'ObservedProperty': 2,
+#     'unitOfMeasurement': UnitOfMeasurement(
+#         name='',
+#         symbol='',
+#         definition='Normalized Difference Red Edge Index'
+#     ),
+#     'properties': {
+#         'raster_data': 'NDRE',
+#         'spectral_index': {
+#             'name': 'NDRE',
+#             'formula': '(NIR - RedEdge) / (NIR + RedEdge)',
+#         }
+#     }
+# },
 
+# ]
+
+DATASTREAMS: list[Datastream] = [
+    Datastream(
+        name=Template('NDVI - Treatment Parcel $treatment_parcel_id'),
+        description=Template(
+            'Normalized Difference Vegetation Index (NDVI) for Treatment Parcel $treatment_parcel_id'),
+        observationType='http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
+        Sensor={"@iot.id": 1},
+        ObservedProperty={"@iot.id": 1},
+        unitOfMeasurement=UnitOfMeasurement(
+            name='',
+            symbol='',
+            definition='Normalized Difference Vegetation Index'
+        ),
+        properties={
+            'raster_data': 'NDVI',
+            'spectral_index': {
+                'name': 'NDVI',
+                'formula': '(NIR - Red) / (NIR + Red)',
+            }
+        }
+    ),
+    Datastream(
+        name=Template('NDRE - Treatment Parcel $treatment_parcel_id'),
+        description=Template(
+            'Normalized Difference Red Edge Index (NDRE) for Treatment Parcel $treatment_parcel_id'),
+        observationType='http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
+        Sensor={"@iot.id": 1},
+        ObservedProperty={"@iot.id": 2},
+        unitOfMeasurement=UnitOfMeasurement(
+            name='',
+            symbol='',
+            definition='Normalized Difference Red Edge Index'
+        ),
+        properties={
+            'raster_data': 'NDRE',
+            'spectral_index': {
+                'name': 'NDRE',
+                'formula': '(NIR - RedEdge) / (NIR + RedEdge)',
+            }
+        }
+    )
 ]
 
-
-# WPS REQUESTS
-WPS_URL = Template(
-    '${geoserver_url}/ows?service=WPS&version=1.0.0')
-WPS_GET_CAPABILITIES_URL = Template(
-    '${geoserver_url}/ows?service=WPS&version=1.0.0&request=GetCapabilities')
+ADDITIONAL_DATASTREAMS: list[Datastream] = [
+    Datastream(
+        name=Template('GNDVI - Treatment Parcel $treatment_parcel_id'),
+        description=Template(
+            'Green Normalized Difference Vegetation Index (GNDVI) for Treatment Parcel $treatment_parcel_id'),
+        observationType='http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
+        Sensor={"@iot.id": 1},
+        ObservedProperty={"@iot.id": 1},
+        unitOfMeasurement=UnitOfMeasurement(
+            name='',
+            symbol='',
+            definition='Green Normalized Difference Vegetation Index'
+        ),
+        properties={
+            'raster_data': 'GNDVI',
+            'spectral_index': {
+                'name': 'GNDVI',
+                'formula': '(NIR - Green) / (NIR + Green)',
+            }
+        }
+    ),
+    Datastream(
+        name=Template('SAVI - Treatment Parcel $treatment_parcel_id'),
+        description=Template(
+            'Soil Adjusted Vegetation Index (SAVI) for Treatment Parcel $treatment_parcel_id'),
+        observationType='http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
+        Sensor={"@iot.id": 1},
+        ObservedProperty={"@iot.id": 2},
+        unitOfMeasurement=UnitOfMeasurement(
+            name='',
+            symbol='',
+            definition='Soil Adjusted Vegetation Index'
+        ),
+        properties={
+            'raster_data': 'SAVI',
+            'spectral_index': {
+                'name': 'SAVI',
+                'formula': '((NIR - Red) / (NIR + Red + L)) * (1 + L). where L is a soil brightness correction factor (typically 0.5)',
+            }
+        }
+    ),
+    Datastream(
+        name=Template('CIred-Edge - Treatment Parcel $treatment_parcel_id'),
+        description=Template(
+            'Chlorophyll Index (CIred-Edge) for Treatment Parcel $treatment_parcel_id'),
+        observationType='http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
+        Sensor={"@iot.id": 1},
+        ObservedProperty={"@iot.id": 2},
+        unitOfMeasurement=UnitOfMeasurement(
+            name='',
+            symbol='',
+            definition='Chlorophyll Index (CIred-Edge)'
+        ),
+        properties={
+            'raster_data': 'CIred-Edge',
+            'spectral_index': {
+                'name': 'CIred-Edge',
+                'formula': '(NIR / RedEdge) -1',
+            }
+        }
+    ),
+    Datastream(
+        name=Template('MCARI - Treatment Parcel $treatment_parcel_id'),
+        description=Template(
+            'Modified Chlorophyll Absorption in Reflectance Index (MCARI) for Treatment Parcel $treatment_parcel_id'),
+        observationType='http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
+        Sensor={"@iot.id": 1},
+        ObservedProperty={"@iot.id": 2},
+        unitOfMeasurement=UnitOfMeasurement(
+            name='',
+            symbol='',
+            definition='Modified Chlorophyll Absorption in Reflectance Index (MCARI)'
+        ),
+        properties={
+            'raster_data': 'MCARI',
+            'spectral_index': {
+                'name': 'MCARI',
+                'formula': '((NIR - RED) - 0.2 *(NIR - GREEN)) * (NIR / RED)',
+            }
+        }
+    )
+]
 
 
 # PYGEOAPI
