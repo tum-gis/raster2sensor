@@ -127,7 +127,7 @@ ADDITIONAL_DATASTREAMS: list[Datastream] = [
             'Green Normalized Difference Vegetation Index (GNDVI) for Treatment Parcel $treatment_parcel_id'),
         observationType='http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
         Sensor={"@iot.id": 1},
-        ObservedProperty={"@iot.id": 1},
+        ObservedProperty={"@iot.id": 3},
         unitOfMeasurement=UnitOfMeasurement(
             name='',
             symbol='',
@@ -147,7 +147,7 @@ ADDITIONAL_DATASTREAMS: list[Datastream] = [
             'Soil Adjusted Vegetation Index (SAVI) for Treatment Parcel $treatment_parcel_id'),
         observationType='http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
         Sensor={"@iot.id": 1},
-        ObservedProperty={"@iot.id": 2},
+        ObservedProperty={"@iot.id": 4},
         unitOfMeasurement=UnitOfMeasurement(
             name='',
             symbol='',
@@ -162,21 +162,21 @@ ADDITIONAL_DATASTREAMS: list[Datastream] = [
         }
     ),
     Datastream(
-        name=Template('CIred-Edge - Treatment Parcel $treatment_parcel_id'),
+        name=Template('CIRedEdge - Treatment Parcel $treatment_parcel_id'),
         description=Template(
-            'Chlorophyll Index (CIred-Edge) for Treatment Parcel $treatment_parcel_id'),
+            'Chlorophyll Index (CIRedEdge) for Treatment Parcel $treatment_parcel_id'),
         observationType='http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
         Sensor={"@iot.id": 1},
-        ObservedProperty={"@iot.id": 2},
+        ObservedProperty={"@iot.id": 5},
         unitOfMeasurement=UnitOfMeasurement(
             name='',
             symbol='',
-            definition='Chlorophyll Index (CIred-Edge)'
+            definition='Chlorophyll Index (CIRedEdge)'
         ),
         properties={
-            'raster_data': 'CIred-Edge',
+            'raster_data': 'CIRedEdge',
             'spectral_index': {
-                'name': 'CIred-Edge',
+                'name': 'CIRedEdge',
                 'formula': '(NIR / RedEdge) -1',
             }
         }
@@ -187,7 +187,7 @@ ADDITIONAL_DATASTREAMS: list[Datastream] = [
             'Modified Chlorophyll Absorption in Reflectance Index (MCARI) for Treatment Parcel $treatment_parcel_id'),
         observationType='http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
         Sensor={"@iot.id": 1},
-        ObservedProperty={"@iot.id": 2},
+        ObservedProperty={"@iot.id": 6},
         unitOfMeasurement=UnitOfMeasurement(
             name='',
             symbol='',

@@ -74,6 +74,8 @@ def main(raster_images: list[RasterImage], process: str, bands: dict):
         # *Create Observations
         parcels.create_observations(
             zonal_stats, raster_image.get('timestamp'))  # type: ignore
+        print(
+            f"[green]Successfully processed raster image: {raster_image.get('path')}[/green]")
 
 
 if __name__ == '__main__':
@@ -113,7 +115,7 @@ if __name__ == '__main__':
         "red_edge_band": 3,
         "nir_band": 5
     }
-    cired_edge_bands = {
+    cirededge_bands = {
         "red_edge_band": 3,
         "nir_band": 5
     }
@@ -131,10 +133,10 @@ if __name__ == '__main__':
         "nir_band": 5
     }
 
-    # main(raster_images, 'ndvi', ndvi_bands)
-    # main(raster_images, 'ndre', ndre_bands)
-    # main(raster_images, 'cired-edge', cired_edge_bands) #! BUG Processing: list out of range
+    main(raster_images, 'ndvi', ndvi_bands)
+    main(raster_images, 'ndre', ndre_bands)
+    main(raster_images, 'cirededge', cirededge_bands)
     main(raster_images, 'gndvi', gndvi_bands)
     main(raster_images, 'savi', savi_bands)
-    main(raster_images, 'mcari', mcari_bands)  # ! BUG verify calculation
+    # main(raster_images, 'mcari', mcari_bands)  # ! BUG verify calculation
     print("[green]Process completed successfully![/green]")
