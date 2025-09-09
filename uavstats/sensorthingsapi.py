@@ -11,7 +11,7 @@ class Location:
     description: str
     encodingType: str
     location: dict[str, object]
-    properties: dict[str, object] = None
+    properties: dict[str, object] = field(default_factory=dict)
 
 
 @dataclass
@@ -23,8 +23,8 @@ class UnitOfMeasurement:
 
 @dataclass
 class Datastream:
-    name: Template | str
-    description: Template | str
+    name: str
+    description: str
     observationType: str
     Sensor: dict[str, int]
     ObservedProperty: dict[str, int]

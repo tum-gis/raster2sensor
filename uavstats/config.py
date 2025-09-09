@@ -79,9 +79,8 @@ SENSOR_THINGS_API_URL = os.getenv('SENSOR_THINGS_API_URL')
 
 DATASTREAMS: list[Datastream] = [
     Datastream(
-        name=Template('NDVI - Treatment Parcel $treatment_parcel_id'),
-        description=Template(
-            'Normalized Difference Vegetation Index (NDVI) for Treatment Parcel $treatment_parcel_id'),
+        name='NDVI -  Plot {plot_id}',
+        description='Normalized Difference Vegetation Index (NDVI) for Plot ID: {plot_id}',
         observationType='http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
         Sensor={"@iot.id": 1},
         ObservedProperty={"@iot.id": 1},
@@ -99,9 +98,8 @@ DATASTREAMS: list[Datastream] = [
         }
     ),
     Datastream(
-        name=Template('NDRE - Treatment Parcel $treatment_parcel_id'),
-        description=Template(
-            'Normalized Difference Red Edge Index (NDRE) for Treatment Parcel $treatment_parcel_id'),
+        name='NDRE - Plot {plot_id}',
+        description='Normalized Difference Red Edge Index (NDRE) for Plot ID: {plot_id}',
         observationType='http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
         Sensor={"@iot.id": 1},
         ObservedProperty={"@iot.id": 2},
@@ -122,9 +120,8 @@ DATASTREAMS: list[Datastream] = [
 
 ADDITIONAL_DATASTREAMS: list[Datastream] = [
     Datastream(
-        name=Template('GNDVI - Treatment Parcel $treatment_parcel_id'),
-        description=Template(
-            'Green Normalized Difference Vegetation Index (GNDVI) for Treatment Parcel $treatment_parcel_id'),
+        name='GNDVI - Plot {plot_id}',
+        description='Green Normalized Difference Vegetation Index (GNDVI) for Plot ID: {plot_id}',
         observationType='http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
         Sensor={"@iot.id": 1},
         ObservedProperty={"@iot.id": 3},
@@ -142,9 +139,8 @@ ADDITIONAL_DATASTREAMS: list[Datastream] = [
         }
     ),
     Datastream(
-        name=Template('SAVI - Treatment Parcel $treatment_parcel_id'),
-        description=Template(
-            'Soil Adjusted Vegetation Index (SAVI) for Treatment Parcel $treatment_parcel_id'),
+        name='SAVI - Plot {plot_id}',
+        description='Soil Adjusted Vegetation Index (SAVI) for Plot ID: {plot_id}',
         observationType='http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
         Sensor={"@iot.id": 1},
         ObservedProperty={"@iot.id": 4},
@@ -162,9 +158,8 @@ ADDITIONAL_DATASTREAMS: list[Datastream] = [
         }
     ),
     Datastream(
-        name=Template('CIRedEdge - Treatment Parcel $treatment_parcel_id'),
-        description=Template(
-            'Chlorophyll Index (CIRedEdge) for Treatment Parcel $treatment_parcel_id'),
+        name='CIRedEdge - Plot {plot_id}',
+        description='Chlorophyll Index (CIRedEdge) for Plot ID: {plot_id}',
         observationType='http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
         Sensor={"@iot.id": 1},
         ObservedProperty={"@iot.id": 5},
@@ -182,9 +177,8 @@ ADDITIONAL_DATASTREAMS: list[Datastream] = [
         }
     ),
     Datastream(
-        name=Template('MCARI - Treatment Parcel $treatment_parcel_id'),
-        description=Template(
-            'Modified Chlorophyll Absorption in Reflectance Index (MCARI) for Treatment Parcel $treatment_parcel_id'),
+        name='MCARI - Plot {plot_id}',
+        description='Modified Chlorophyll Absorption in Reflectance Index (MCARI) for Plot ID: {plot_id}',
         observationType='http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
         Sensor={"@iot.id": 1},
         ObservedProperty={"@iot.id": 6},

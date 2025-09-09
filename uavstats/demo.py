@@ -20,13 +20,13 @@ class RasterImage:
 
 @timeit
 def main(raster_images: list[RasterImage], process: str, bands: dict):
-    parcels = Parcels(
-        file_path=Path(config.LAND_PARCELS_FILE),
-        land_parcel_id='1',
-        field_trial_id='FAIRagro UC6',
-        treatment_parcel_id_field=config.TREATMENT_PARCELS_ID_FIELD if config.TREATMENT_PARCELS_ID_FIELD is not None else "",
-        project_id=config.PROJECT_ID if config.PROJECT_ID is not None else ""
-    )
+    # parcels = Parcels(
+    #     file_path=Path(config.LAND_PARCELS_FILE),
+    #     trial_id='Goetheweg-2024',
+    #     plot_id_field=config.TREATMENT_PARCELS_ID_FIELD if config.TREATMENT_PARCELS_ID_FIELD is not None else "",
+    #     treatment_id_field=config.TREATMENT_PARCELS_ID_FIELD if config.TREATMENT_PARCELS_ID_FIELD is not None else "",
+
+    # )
 
     if config.PYGEOAPI_URL is None:
         raise ValueError(
@@ -34,7 +34,7 @@ def main(raster_images: list[RasterImage], process: str, bands: dict):
     ogc_api_processes = OGCAPIProcesses(config.PYGEOAPI_URL)
 
     # *Load Parcels
-    parcels_geojson = parcels.fetch_parcels_geojson(
+    parcels_geojson = Parcels.fetch_parcels_geojson(
         config.PROJECT_ID if config.PROJECT_ID is not None else "")
     parcels_ds = gdal.OpenEx(json.dumps(parcels_geojson))
     parcels_layer = parcels_ds.GetLayer()
@@ -72,7 +72,7 @@ def main(raster_images: list[RasterImage], process: str, bands: dict):
             print("[red]Error executing zonal statistics")
             sys.exit(1)
         # *Create Observations
-        parcels.create_observations(
+        Parcels.create_observations(
             zonal_stats, raster_image.get('timestamp'))  # type: ignore
         print(
             f"[green]Successfully processed raster image: {raster_image.get('path')}[/green]")
