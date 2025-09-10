@@ -3,6 +3,7 @@ import os
 import sys
 import time
 import requests
+import json
 from functools import wraps
 from rich import print
 import xml.etree.ElementTree as ET
@@ -80,20 +81,21 @@ def fetch_sensorthingsapi(url) -> list:
     return fetched_entities
 
 
-def create_sensorthingsapi_entity(url: str, entity: dict) -> int:
+def create_sensorthingsapi_entity(url: str, entity: dict) -> requests.Response:
     """Create a SensorThingsAPI Entity
 
     Args:
-        url (_type_): API URL
-        entity (_type_): Entity data
+        url (string): API URL
+        entity (dict): Entity data
 
     Returns:
-        response.status_code (_type_): API response status code
+        response.status_code (int): API response status code
     """
     headers = {'Content-Type': 'application/json;charset=UTF-8'}
     response = None
     try:
-        response = requests.post(url=url, data=entity, headers=headers)
+        response = requests.post(
+            url=url, data=json.dumps(entity), headers=headers)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
         print(
@@ -104,7 +106,7 @@ def create_sensorthingsapi_entity(url: str, entity: dict) -> int:
             except Exception:
                 print(response.text)
         sys.exit(1)
-    return response.status_code
+    return response
 
 
 def pretty_xml(xml_string: str) -> str:

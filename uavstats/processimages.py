@@ -3,7 +3,7 @@ from osgeo import gdal
 from rich import print
 from uavstats import config
 from uavstats.utils import fetch_data, clear, timeit
-from uavstats.parcels import Parcels
+from uavstats.plots import Parcels
 from uavstats.ogcapiprocesses import OGCAPIProcesses
 from uavstats.processes import zonal_statistics, calculate_ndvi
 from uavstats.spatial_tools import read_raster, clip_raster, plot_raster, write_raster, encode_raster_to_base64, decode_base64_to_raster

@@ -3,7 +3,7 @@ import numpy
 from rich import print
 from uavstats import config
 from uavstats.utils import fetch_data, clear
-from uavstats.parcels import Parcels
+from uavstats.plots import Plots
 from uavstats.ogcapiprocesses import OGCAPIProcesses
 from uavstats.processes import execute_process
 

@@ -4,7 +4,7 @@ from rich.console import Console
 from uavstats import config
 from uavstats import __app_name__, __version__
 from uavstats.utils import clear, timeit
-from uavstats.parcels import Parcels
+from uavstats.plots import Plots
 from uavstats.ogcapiprocesses import OGCAPIProcesses
 
 app = typer.Typer()
@@ -74,6 +74,6 @@ def fetch_parcels(project_id: str):
         project_id (str): Project ID
     """
     clear()
-    parcels_geojson = Parcels.fetch_parcels_geojson(project_id)
+    plots_geojson = Plots.fetch_parcels_geojson(project_id)
     # typer.echo(parcels_geojson)
-    console.print(parcels_geojson)
+    console.print(plots_geojson)

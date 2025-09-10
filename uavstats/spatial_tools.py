@@ -55,8 +55,10 @@ def clip_raster(raster_dataset: gdal.Dataset, polygon_layer: ogr.Layer) -> gdal.
     Returns:
         gdal.Dataset: Cropped raster dataset
     """
-
-    # Get the extent of the polygon
+    # If raster dataset is None, throw error
+    if raster_dataset is None:
+        raise ValueError("Invalid raster dataset")
+    # # Get the extent of the polygon
     polygon_extent = polygon_layer.GetExtent()
 
     # Apply buffer to polygon extent
@@ -72,14 +74,15 @@ def clip_raster(raster_dataset: gdal.Dataset, polygon_layer: ogr.Layer) -> gdal.
         print("Reprojecting raster to match vector CRS...")
         reprojected_ds = gdal.Warp('', raster_dataset, format='MEM',
                                    dstSRS=polygon_layer_srs.ExportToWkt())
-        raster_dataset = reprojected_ds
+        if isinstance(reprojected_ds, gdal.Dataset):
+            raster_dataset = reprojected_ds
+        else:
+            raise RuntimeError(
+                "Raster reprojection failed, gdal.Warp did not return a valid Dataset.")
 
     clipped_ds = gdal.Translate("clipped_ds.tif", raster_dataset, projWin=[
                                 xmin, ymax, xmax, ymin])
 
-    # Close input datasets
-    raster_dataset = None
-    polygon_layer = None
     # TODO : Logger debug & error messages
     if clipped_ds:
         print("[green]✅ Clipping successful, returning GDAL dataset.")
@@ -101,7 +104,11 @@ def plot_raster(raster_dataset: gdal.Dataset):
         return
 
     raster_array = raster_dataset.ReadAsArray()
-    # TODO Handle multispectral images with more than 3 bands
+    # If raster_array is None, raise error
+    if raster_array is None:
+        raise ValueError("Invalid raster array")
+    # Plot the raster array
+    # TODO: Handle multispectral images with more than 3 bands
     # Check if the raster is multiband
     if len(raster_array.shape) == 3:
         # Multiband image
