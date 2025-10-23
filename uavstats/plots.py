@@ -77,6 +77,7 @@ class Plots:
                     'year': self.year,
 
                 },
+                # TODO: Where should be the properties be placed? in the location or properties of the Location entity?
                 Locations=[
                     Location(
                         name=f'Location of Plot - {plot_id}',

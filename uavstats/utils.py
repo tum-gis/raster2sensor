@@ -89,7 +89,7 @@ def create_sensorthingsapi_entity(url: str, entity: dict) -> requests.Response:
         entity (dict): Entity data
 
     Returns:
-        response.status_code (int): API response status code
+        response (requests.Response): API response
     """
     headers = {'Content-Type': 'application/json;charset=UTF-8'}
     response = None
