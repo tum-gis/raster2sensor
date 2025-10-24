@@ -5,10 +5,6 @@ from uavstats.sensorthingsapi import UnitOfMeasurement, Datastream
 load_dotenv(find_dotenv())
 
 
-GEOSERVER_URL = os.getenv('GEOSERVER_URL')
-GEOSERVER_USER = os.getenv('GEOSERVER_USER')
-GEOSERVER_PASSWORD = os.getenv('GEOSERVER_PASSWORD')
-
 # DATA DIRECTORIES & FILES
 GIS_DATA_DIR = './gis_data'
 if not os.path.exists(GIS_DATA_DIR):
@@ -79,8 +75,8 @@ SENSOR_THINGS_API_URL = os.getenv('SENSOR_THINGS_API_URL')
 
 DATASTREAMS: list[Datastream] = [
     Datastream(
-        name='NDVI -  Plot {plot_id}',
-        description='Normalized Difference Vegetation Index (NDVI) for Plot ID: {plot_id}',
+        name='NDVI -  Trial Plot {plot_id}',
+        description='Normalized Difference Vegetation Index (NDVI) for Trial Plot {plot_id}',
         observationType='http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
         Sensor={"@iot.id": 1},
         ObservedProperty={"@iot.id": 1},
@@ -98,8 +94,8 @@ DATASTREAMS: list[Datastream] = [
         }
     ),
     Datastream(
-        name='NDRE - Plot {plot_id}',
-        description='Normalized Difference Red Edge Index (NDRE) for Plot ID: {plot_id}',
+        name='NDRE - Trial Plot {plot_id}',
+        description='Normalized Difference Red Edge Index (NDRE) for Trial Plot {plot_id}',
         observationType='http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
         Sensor={"@iot.id": 1},
         ObservedProperty={"@iot.id": 2},
@@ -115,13 +111,10 @@ DATASTREAMS: list[Datastream] = [
                 'formula': '(NIR - RedEdge) / (NIR + RedEdge)',
             }
         }
-    )
-]
-
-ADDITIONAL_DATASTREAMS: list[Datastream] = [
+    ),
     Datastream(
-        name='GNDVI - Plot {plot_id}',
-        description='Green Normalized Difference Vegetation Index (GNDVI) for Plot ID: {plot_id}',
+        name='GNDVI - Trial Plot {plot_id}',
+        description='Green Normalized Difference Vegetation Index (GNDVI) for Trial Plot {plot_id}',
         observationType='http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
         Sensor={"@iot.id": 1},
         ObservedProperty={"@iot.id": 3},
@@ -139,8 +132,8 @@ ADDITIONAL_DATASTREAMS: list[Datastream] = [
         }
     ),
     Datastream(
-        name='SAVI - Plot {plot_id}',
-        description='Soil Adjusted Vegetation Index (SAVI) for Plot ID: {plot_id}',
+        name='SAVI - Trial Plot {plot_id}',
+        description='Soil Adjusted Vegetation Index (SAVI) for Trial Plot {plot_id}',
         observationType='http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
         Sensor={"@iot.id": 1},
         ObservedProperty={"@iot.id": 4},
@@ -158,8 +151,8 @@ ADDITIONAL_DATASTREAMS: list[Datastream] = [
         }
     ),
     Datastream(
-        name='CIRedEdge - Plot {plot_id}',
-        description='Chlorophyll Index (CIRedEdge) for Plot ID: {plot_id}',
+        name='CIRedEdge - Trial Plot {plot_id}',
+        description='Chlorophyll Index (CIRedEdge) for Trial Plot {plot_id}',
         observationType='http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
         Sensor={"@iot.id": 1},
         ObservedProperty={"@iot.id": 5},
@@ -177,8 +170,8 @@ ADDITIONAL_DATASTREAMS: list[Datastream] = [
         }
     ),
     Datastream(
-        name='MCARI - Plot {plot_id}',
-        description='Modified Chlorophyll Absorption in Reflectance Index (MCARI) for Plot ID: {plot_id}',
+        name='MCARI - Trial Plot {plot_id}',
+        description='Modified Chlorophyll Absorption in Reflectance Index (MCARI) for Trial Plot {plot_id}',
         observationType='http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
         Sensor={"@iot.id": 1},
         ObservedProperty={"@iot.id": 6},

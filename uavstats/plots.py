@@ -67,39 +67,37 @@ class Plots:
                 self.treatment_id_field, '') if self.treatment_id_field else ''
             geometry = feature['geometry']
             plot_thing = Thing(
-                name=f'Plot - {plot_id}',
-                description=f'Plot: {plot_id}' + (
-                    f' (Treatment: {treatment_id})' if treatment_id else f''),
+                name=f'Trial Plot - {self.trial_id}-{plot_id} ',
+                description=f'Agricultural trial plot {plot_id} belonging to trial {self.trial_id}',
                 properties={
                     'trial_id': self.trial_id,
                     'plot_id': plot_id,
-                    'treatment_id': treatment_id,
+                    **({"treatment_id": treatment_id} if treatment_id else {}),
                     'year': self.year,
 
                 },
-                # TODO: Where should be the properties be placed? in the location or properties of the Location entity?
+
                 Locations=[
                     Location(
-                        name=f'Location of Plot - {plot_id}',
-                        description=f'Polygon Geometry for Plot - {plot_id}',
+                        name=f'Location of Trial Plot - {self.trial_id}-{plot_id}',
+                        description=f'Polygon Geometry for Trial Plot - {self.trial_id}-{plot_id}',
                         encodingType='application/geo+json',
                         location={"type": "Feature",
                                   "geometry": geometry,
-                                  "properties": {
-                                      'trial_id': self.trial_id,
-                                      'plot_id': plot_id,
-                                      'treatment_id': treatment_id,
-                                      'year': self.year
-                                  }, },
+                                  },
+                        properties={
+                            'trial_id': self.trial_id,
+                            'plot_id': plot_id,
+                        }
 
                     )
                 ],
                 Datastreams=[
                     # Loop through the Datastreams in the config file
                     Datastream(name=ds.name.format(
-                        plot_id=plot_id),
+                        plot_id=f'{self.trial_id}-{plot_id}'),
                         description=ds.description.format(
-                            plot_id=plot_id),
+                            plot_id=f'{self.trial_id}-{plot_id}'),
                         observationType=ds.observationType,
                         unitOfMeasurement=ds.unitOfMeasurement,
                         Sensor=ds.Sensor,
@@ -114,7 +112,8 @@ class Plots:
                          for i, thing in enumerate(plot_things)]
         create_sensorthingsapi_entity(
             f'{config.SENSOR_THINGS_API_URL}/$batch', {'requests': batch_request})
-        print('[green]SensorThingsAPI Things created successfully')
+        print(
+            f'[green]{len(plot_things)} SensorThingsAPI Things created successfully for trial id: {self.trial_id}')
 
     @staticmethod
     def fetch_plots_geojson(trial_id: str) -> dict:
@@ -168,9 +167,9 @@ class Plots:
             for ds in datastreams:
                 new_datastream = DatastreamAppend(
                     name=ds.name.format(
-                        plot_id=thing['properties']['plot_id']),
+                        plot_id=f"{thing['properties']['trial_id']}-{thing['properties']['plot_id']}"),
                     description=ds.description.format(
-                        plot_id=thing['properties']['plot_id']),
+                        plot_id=f"{thing['properties']['trial_id']}-{thing['properties']['plot_id']}"),
                     observationType=ds.observationType,
                     unitOfMeasurement=ds.unitOfMeasurement,
                     Sensor=ds.Sensor,
@@ -276,10 +275,7 @@ class Plots:
 
 if __name__ == "__main__":
     clear()
-    if config.TREATMENT_PARCELS_ID_FIELD is None:
-        raise ValueError("TREATMENT_PARCELS_ID_FIELD must be set in config")
-    if config.PROJECT_ID is None:
-        raise ValueError("PROJECT_ID must be set in config")
+    # ----- Geotheweg-2024 -----
     plots = Plots(
         file_path=Path('gis_data\\plots_goetheweg-2024.geojson'),
         trial_id='Goetheweg-2024',
@@ -287,12 +283,18 @@ if __name__ == "__main__":
         treatment_id_field='',
         year=2024
     )
-    # features = parcels.read_file()
-    # print(features)
-    # plots_geojson = Plots.fetch_parcels_geojson(config.PROJECT_ID)
-    # print(plots_geojson)
     plots.create_sensorthings_things()
     # plots.add_datastreams(
     #     trial_id='Goetheweg-2024',
     #     datastreams=config.ADDITIONAL_DATASTREAMS
     # )
+
+    # ----- Ochsenwasen-2025 -----
+    plots = Plots(
+        file_path=Path('gis_data\\plots_ochsenwasen-2025.geojson'),
+        trial_id='Ochsenwasen-2025',
+        plot_id_field='plot_id',
+        treatment_id_field='treat_id',
+        year=2025
+    )
+    plots.create_sensorthings_things()
