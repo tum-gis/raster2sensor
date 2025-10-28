@@ -116,6 +116,7 @@ if __name__ == '__main__':
         "nir_band": 5
     }
     gndvi_bands = {
+
         "green_band": 1,
         "nir_band": 5
     }
