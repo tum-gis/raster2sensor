@@ -174,5 +174,6 @@ cython_debug/
 *.sbn
 *.geojson
 
-# Virtualenv
-fairagropy
+# LOGS
+*.log
+/logs/

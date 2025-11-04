@@ -1,6 +1,10 @@
+import json
 from rich import print
 import requests
-from uavstats.utils import fetch_data
+from raster2sensor.utils import fetch_data
+from raster2sensor.logging import get_logger, log_and_print
+
+logger = get_logger(__name__)
 
 
 # Create a class to handle OGC API - Processes
@@ -13,13 +17,13 @@ class OGCAPIProcesses:
     def __init__(self, url: str):
         self.url = url
 
-    def fetch_processes(self):
+    def get_processes(self):
         '''Fetches OGC API - Processes'''
-        print(f'Fetching OGC API - Processes from {self.url}')
+        log_and_print(
+            f'Fetching OGC API - Processes from {self.url}', level='info')
         # Add code here to fetch OGC API - Processes
         processes = fetch_data(f'{self.url}/processes')
-        print(f'[yellow]Fetched {len(processes)} OGC API - Processes')
-        print(processes)
+        log_and_print(json.dumps(processes, indent=2), level='info')
         return processes
 
     def describe_process(self, process_id: str):
@@ -27,10 +31,11 @@ class OGCAPIProcesses:
         Args:
             process_id (str): Process ID
         '''
-        print(f'Describing OGC API - Process {process_id}')
+        log_and_print(
+            f'Describing OGC API - Process {process_id}', level='info')
         # Add code here to describe OGC API - Process
         process = fetch_data(f'{self.url}/processes/{process_id}')
-        print(process)
+        log_and_print(json.dumps(process, indent=2), level='info')
         return process
 
     def execute_process(self, process_id: str, inputs: dict):
@@ -39,7 +44,8 @@ class OGCAPIProcesses:
             process_id (str): Process ID
             inputs (dict): Inputs for the Process
         '''
-        print(f'Executing OGC API - Process {process_id}')
+        log_and_print(
+            f'Executing OGC API - Process {process_id}', level='info')
         # Add code here to execute OGC API - Process
         headers = {'Content-Type': 'application/json'}
         data = {'inputs': inputs}
@@ -48,7 +54,7 @@ class OGCAPIProcesses:
                 f'{self.url}/processes/{process_id}/execution', headers=headers, json=data)
             execution.raise_for_status()
         except requests.exceptions.RequestException as e:
-            print(f'[red]Error executing process: {e}')
+            log_and_print(f'Error executing process: {e}', level='error')
             print(execution.text)  # type: ignore
             return None
         return execution.json()
