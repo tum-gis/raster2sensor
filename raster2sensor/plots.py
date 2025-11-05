@@ -5,12 +5,13 @@ import logging
 from datetime import datetime
 from pathlib import Path
 from dataclasses import dataclass, asdict, field
+import sys
 from typing import Optional
 import geopandas as gpd
 from raster2sensor import config
 from raster2sensor.utils import clear, get_file_extension, create_sensorthingsapi_entity, fetch_sensorthingsapi
 from raster2sensor.sensorthingsapi import Thing, Location, Datastream
-from raster2sensor.logging import get_logger, log_and_print, log_and_raise
+from raster2sensor.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -44,9 +45,9 @@ class Plots:
     def read_file(self) -> gpd.GeoDataFrame:
         '''Reads Plots File'''
         if not os.path.isfile(self.file_path):
-            log_and_raise(
-                message=f'{self.file_path} not found', exception_type=FileNotFoundError
-            )
+            error_msg = f'{self.file_path} not found'
+            logger.error(error_msg)
+            raise FileNotFoundError(error_msg)
         driver = 'ESRI Shapefile' if self.file_extension == '.shp' else 'GeoJSON'
         return gpd.read_file(self.file_path, driver=driver)
 
@@ -56,20 +57,16 @@ class Plots:
             - Each plot has a Location
             - [Optional] Each plot has one or many Datastreams
         '''
-        log_and_print(
-            "Creating SensorThingsAPI Things",
-            level='info')
+        logger.info(
+            "Creating SensorThingsAPI Things"
+        )
 
         plot_things = []
         for feature in self.read_file().iterfeatures(drop_id=True):
             if self.plot_id_field not in feature['properties']:
                 error_msg = f"Plot ID field '{self.plot_id_field}' does not exist in feature properties"
-                log_and_print(
-                    message=error_msg,
-                    level='error'
-                )
-                raise KeyError(
-                    f"Plot ID field '{self.plot_id_field}' does not exist in feature properties")
+                logger.error(error_msg)
+                raise KeyError(error_msg)
             plot_id = feature['properties'][self.plot_id_field]
             # If not treatment_id_field, treatment_id is blank
             treatment_id = feature['properties'].get(
@@ -124,10 +121,7 @@ class Plots:
 
         # Log clean message for audit trail
         success_msg = f'{len(plot_things)} SensorThingsAPI Things created successfully for trial id: {self.trial_id}'
-        log_and_print(
-            success_msg,
-            level='info'
-        )
+        logger.info(success_msg)
 
     @staticmethod
     def fetch_plots_geojson(trial_id: str) -> dict:
@@ -142,11 +136,16 @@ class Plots:
         # convert the fetched data to a GeoJSON
         if not plots_data:
             error_msg = f"No plots found for trial id: '{trial_id}'"
-            log_and_print(
-                message=error_msg,
-                level='error'
-            )
-            raise ValueError(error_msg)
+            # log_and_raise(
+            #     message=error_msg,
+            #     exception_type=ValueError,
+            #     # level='error'
+            # )
+            logger.error(error_msg)
+            sys.exit(1)
+        else:
+            logger.info(
+                f"Fetched {len(plots_data)} plots for trial id: '{trial_id}'")
         plots_geojson = {
             'type': 'FeatureCollection',
             'features': [
@@ -165,16 +164,16 @@ class Plots:
             ]}
 
         # If logger.level is DEBUG write the GeoJSON to a file:
-        log_and_print(
-            f"Writing plots GeoJSON to {config.PARCELS_GEOJSON}", level='info'
-        )
-        if logger.level == logging.DEBUG:
+        if logger.level <= logging.DEBUG:
+            logger.debug(
+                f"Writing plots GeoJSON to {config.PARCELS_GEOJSON}"
+            )
             with open(config.PARCELS_GEOJSON, 'w') as f:
                 json.dump(plots_geojson, f, indent=2)
         return plots_geojson
 
-    def add_datastreams(self, trial_id, datastreams: list[Datastream]):
-        # !TODO Create additional datastreams for each existing parcel
+    @staticmethod
+    def add_datastreams(trial_id, datastreams: list[Datastream]):
         """Create additional Datastreams for each existing parcel
         Fetch existing parcels from the SensorThingsAPI and create additional Datastreams for each parcel
         Args:
@@ -215,9 +214,8 @@ class Plots:
                 #     asdict(new_datastream), indent=2, ensure_ascii=True)
                 # datastreams_url = f"{config.SENSOR_THINGS_API_URL}/Datastreams"
                 # create_sensorthingsapi_entity(datastreams_url, datastream_json)
-        log_and_print(
-            f"Creating {len(post_datastreams)} new datastreams for field trial '{trial_id}'",
-            level='info'
+        logger.info(
+            f"Creating {len(post_datastreams)} new datastreams for field trial '{trial_id}'"
         )
         batch_url = f"{config.SENSOR_THINGS_API_URL}/$batch"
 
@@ -230,15 +228,11 @@ class Plots:
         except Exception as e:
             # Handle both HTTP errors and other exceptions
             error_msg = f"Error creating datastreams for trial '{trial_id}': {str(e)}"
-            log_and_print(
-                message=error_msg,
-                level='error'
-            )
+            logger.error(error_msg)
             raise
 
-        log_and_print(
-            message=f"Successfully created {len(post_datastreams)} new datastreams for field trial '{trial_id}'",
-            level='info'
+        logger.info(
+            f"Successfully created {len(post_datastreams)} new datastreams for field trial '{trial_id}'"
         )
 
     @staticmethod
@@ -255,39 +249,49 @@ class Plots:
         things = []
         # Validate input parameters
         if not isinstance(zonal_stats, dict):
-            log_and_raise(message="zonal_stats must be a dictionary",
-                          exception_type=ValueError)
+            error_msg = "zonal_stats must be a dictionary"
+            logger.error(error_msg)
+            raise ValueError(error_msg)
 
         if not flight_timestamp:
-            log_and_raise(message="flight_timestamp cannot be empty",
-                          exception_type=ValueError)
+            error_msg = "flight_timestamp cannot be empty"
+            logger.error(error_msg)
+            raise ValueError(error_msg)
 
         # Extract and validate required fields
         result_time = zonal_stats.get('result_time')
         if not result_time:
-            log_and_raise(
-                message="Missing 'result_time' in zonal_stats", exception_type=ValueError)
+            error_msg = "Missing 'result_time' in zonal_stats"
+            logger.error(error_msg)
+            raise ValueError(error_msg)
 
         value = zonal_stats.get('value')
         if not value:
-            log_and_raise(message="Missing 'value' in zonal_stats",
-                          exception_type=ValueError)
+            error_msg = "Missing 'value' in zonal_stats"
+            logger.error(error_msg)
+            raise ValueError(error_msg)
 
         if not isinstance(value, dict):
-            raise ValueError("zonal_stats['value'] must be a dictionary")
+            error_msg = "zonal_stats['value'] must be a dictionary"
+            logger.error(error_msg)
+            raise ValueError(error_msg)
 
         zonal_stats_features = value.get('features')
 
         if not zonal_stats_features:
-            log_and_raise(
-                message="Missing 'features' in zonal_stats['value']", exception_type=ValueError)
+            error_msg = "Missing 'features' in zonal_stats['value']"
+            logger.error(error_msg)
+            raise ValueError(error_msg)
 
         raster_data = zonal_stats.get('raster_data')
         if not raster_data:
-            log_and_raise(
-                message="Missing 'raster_data' in zonal_stats", exception_type=ValueError)
+            error_msg = "Missing 'raster_data' in zonal_stats"
+            logger.error(error_msg)
+            raise ValueError(error_msg)
         if not isinstance(raster_data, str):
-            raise ValueError("raster_data must be a string")
+            error_msg = "raster_data must be a string"
+            logger.error(error_msg)
+            raise ValueError(error_msg)
         raster_data = raster_data.lower()
         # flight_timestamp = datetime.strptime(flight_timestamp, '%Y-%m-%d')
 
@@ -297,10 +301,12 @@ class Plots:
                 f"{config.SENSOR_THINGS_API_URL}/Things?$expand=Datastreams")
             if not things:
                 error_msg = "No things found in SensorThings API"
-                log_and_raise(message=error_msg, exception_type=RuntimeError)
+                logger.error(error_msg)
+                raise RuntimeError(error_msg)
         except Exception as e:
             error_msg = f"Failed to fetch things from SensorThings API: {str(e)}"
-            log_and_raise(message=error_msg, exception_type=RuntimeError)
+            logger.error(error_msg)
+            raise RuntimeError(error_msg)
 
         # Match Datastreams with Zonal Stats
         observations = []
@@ -376,19 +382,16 @@ class Plots:
         # Log summary of missing datastreams
         if missing_datastreams:
             warning_msg = f"Datastreams not found for {len(missing_datastreams)} features"
-            log_and_print(message=warning_msg, level='warning',
-                          )
+            logger.warning(warning_msg)
 
         # Only proceed if observations length > 0
         if len(observations) < 1:
             warning_msg = "No valid observations to create"
-            log_and_print(message=warning_msg, level='warning',
-                          )
+            logger.warning(warning_msg)
             return
 
         info_msg = f"Creating {len(observations)} observations"
-        log_and_print(message=info_msg, level='info',
-                      )
+        logger.info(info_msg)
         batch_request = [{'id': i, 'method': 'post', 'url': 'Observations', 'body': observation}
                          for i, observation in enumerate(observations)]
 
@@ -397,12 +400,10 @@ class Plots:
             create_sensorthingsapi_entity(
                 f'{config.SENSOR_THINGS_API_URL}/$batch', {'requests': batch_request})
             info_msg = f"Successfully created {len(observations)} observations"
-            log_and_print(message=info_msg, level='info',
-                          )
+            logger.info(info_msg)
         except Exception as e:
             error_msg = f"Failed to create observations: {str(e)}"
-            log_and_print(message=error_msg, level='error',
-                          )
+            logger.error(error_msg)
             raise
 
 

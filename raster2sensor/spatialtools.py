@@ -4,6 +4,9 @@ from rich import print
 from math import radians, cos
 import matplotlib.pyplot as plt
 from osgeo import ogr, gdal
+from raster2sensor.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 def read_raster(file_path: str) -> gdal.Dataset:
@@ -13,7 +16,7 @@ def read_raster(file_path: str) -> gdal.Dataset:
         file_path (str): Path to the GeoTIFF file
     """
     # Get name from file path
-    print(f"[cyan] Processing Raster: {os.path.basename(file_path)}")
+    logger.info(f"Processing Raster: {os.path.basename(file_path)}")
     ds = gdal.Open(file_path)
     return ds
 
@@ -57,6 +60,7 @@ def clip_raster(raster_dataset: gdal.Dataset, polygon_layer: ogr.Layer) -> gdal.
     """
     # If raster dataset is None, throw error
     if raster_dataset is None:
+        logger.error("Invalid raster dataset")
         raise ValueError("Invalid raster dataset")
     # # Get the extent of the polygon
     polygon_extent = polygon_layer.GetExtent()
@@ -71,12 +75,13 @@ def clip_raster(raster_dataset: gdal.Dataset, polygon_layer: ogr.Layer) -> gdal.
     # TODO always reproject the rasters to match the vector CRS (4326)
     # Reproject raster if needed
     if polygon_layer_srs and polygon_layer_srs.ExportToWkt() != raster_dataset_srs:
-        print("Reprojecting raster to match vector CRS...")
+        logger.info("Reprojecting raster to match vector CRS...")
         reprojected_ds = gdal.Warp('', raster_dataset, format='MEM',
                                    dstSRS=polygon_layer_srs.ExportToWkt())
         if isinstance(reprojected_ds, gdal.Dataset):
             raster_dataset = reprojected_ds
         else:
+            logger.error("Raster reprojection failed")
             raise RuntimeError(
                 "Raster reprojection failed, gdal.Warp did not return a valid Dataset.")
 
@@ -85,9 +90,9 @@ def clip_raster(raster_dataset: gdal.Dataset, polygon_layer: ogr.Layer) -> gdal.
 
     # TODO : Logger debug & error messages
     if clipped_ds:
-        print("[green]✅ Clipping successful, returning GDAL dataset.")
+        logger.info("✅ Clipping successful, returning GDAL dataset.")
     else:
-        print("[red]❌ Clipping failed.")
+        logger.error("❌ Clipping failed.")
 
     return clipped_ds  # Return in-memory GDAL dataset
 
@@ -100,7 +105,7 @@ def plot_raster(raster_dataset: gdal.Dataset):
     """
     # Get the raster array
     if raster_dataset is None:
-        print("❌ Invalid raster dataset.")
+        logger.error("❌ Invalid raster dataset.")
         return
 
     raster_array = raster_dataset.ReadAsArray()

@@ -6,7 +6,7 @@ from rich import print
 from osgeo import gdal, ogr
 import numpy
 from pygeoapi.process.base import BaseProcessor, ProcessorExecuteError
-from raster2sensor.spatial_tools import read_raster, clip_raster, plot_raster, write_raster, encode_raster_to_base64, decode_base64_to_raster
+from raster2sensor.spatialtools import read_raster, clip_raster, plot_raster, write_raster, encode_raster_to_base64, decode_base64_to_raster
 
 ogr.UseExceptions()
 LOGGER = logging.getLogger(__name__)

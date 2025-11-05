@@ -59,9 +59,9 @@ class Raster2SensorLogger:
                     # Try to create console with safer width/height settings
                     self.console = Console(
                         # Limit width to prevent buffer issues
-                        width=min(120, 80),
-                        height=min(50, 30),  # Limit height
-                        force_terminal=False,  # Let Rich detect terminal capabilities
+                        # width=min(120, 80),
+                        # height=min(50, 30),  # Limit height
+                        force_terminal=True,  # Let Rich detect terminal capabilities
                         legacy_windows=True   # Better Windows compatibility
                     )
                 except Exception:
@@ -299,7 +299,7 @@ class Raster2SensorLogger:
             status_code: Response status code
             **kwargs: Additional context information
         """
-        logger = self.get_logger('raster2sensor.api')
+        logger = self.get_logger(__name__)
         message = f"{method.upper()} {url}"
         if status_code:
             message += f" | Status: {status_code}"
@@ -308,10 +308,37 @@ class Raster2SensorLogger:
         if context:
             message += f" | {context}"
 
-        if status_code and status_code >= 400:
-            logger.error(message)
+        # Determine log level based on status code
+        log_level = logging.ERROR if status_code and status_code >= 400 else logging.INFO
+
+        # Create a LogRecord manually to set the correct caller information
+        import inspect
+        frame = inspect.currentframe()
+        if frame and frame.f_back and frame.f_back.f_back:
+            # Go up two frames: log_api_request -> standalone function -> actual caller
+            caller_frame = frame.f_back.f_back
+            caller_filename = caller_frame.f_code.co_filename
+            caller_function = caller_frame.f_code.co_name
+            caller_lineno = caller_frame.f_lineno
+
+            # Create a custom LogRecord with caller information
+            record = logger.makeRecord(
+                logger.name,
+                log_level,
+                caller_filename,
+                caller_lineno,
+                message,
+                args=(),
+                exc_info=None,
+                func=caller_function
+            )
+            logger.handle(record)
         else:
-            logger.info(message)
+            # Fallback to normal logging if frame inspection fails
+            if status_code and status_code >= 400:
+                logger.error(message)
+            else:
+                logger.info(message)
 
     def log_error(self, error: Exception, context: Optional[str] = None, **kwargs) -> None:
         """
@@ -456,6 +483,7 @@ def cleanup_old_logs(max_age_days: int = 30) -> None:
     logger_instance.cleanup_old_logs(max_age_days)
 
 
+# TODO: Deprecate these utility functions in favor of using the logger instance directly
 def log_and_print(message: str, level: str = 'info', rich_format: Optional[str] = None, logger_instance: Optional[logging.Logger] = None, **kwargs):
     """
     Log a message and optionally print it with rich formatting.
@@ -478,7 +506,7 @@ def log_and_print(message: str, level: str = 'info', rich_format: Optional[str] 
             f"Invalid log level '{level}'. Must be one of: {', '.join(sorted(valid_levels))}")
 
     if logger_instance is None:
-        logger_instance = get_logger('raster2sensor')
+        logger_instance = get_logger(__name__)
 
     # Create a LogRecord manually to set the correct caller information
     frame = inspect.currentframe()
@@ -575,7 +603,7 @@ def log_and_raise(
         # Raises: ValueError("Invalid input data")
     """
     if logger_instance is None:
-        logger_instance = get_logger('raster2sensor')
+        logger_instance = get_logger(__name__)
 
     # Create a LogRecord manually to set the correct caller information
     frame = inspect.currentframe()
@@ -617,4 +645,4 @@ def log_and_raise(
 
 
 # Default logger for backward compatibility
-LOGGER = get_logger('raster2sensor')
+LOGGER = get_logger(__name__)

@@ -8,6 +8,9 @@ from functools import wraps
 from rich import print
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from raster2sensor.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 def clear():
@@ -52,11 +55,12 @@ def fetch_data(url) -> dict:
     Returns:
         response (_type_): API response
     """
+    response = None
     try:
         response = requests.get(url)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        print(f"[red]An error occurred while fetching data: {e}")
+        logger.error(f'An error occurred while fetching data: {e}')
         sys.exit(1)
     return response.json()
 
@@ -98,13 +102,13 @@ def create_sensorthingsapi_entity(url: str, entity: dict) -> requests.Response:
             url=url, data=json.dumps(entity), headers=headers)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        print(
-            f"[red]An error occurred while posting to the SensorThings API: {e}")
+        logger.error(
+            f"An error occurred while posting to the SensorThings API: {e}")
         if response is not None:
             try:
-                print(response.json())
+                logger.error(response.json())
             except Exception:
-                print(response.text)
+                logger.error(response.text)
         sys.exit(1)
     return response
 

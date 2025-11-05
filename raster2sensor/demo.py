@@ -7,7 +7,7 @@ from raster2sensor.utils import fetch_data, clear, timeit
 from raster2sensor.plots import Plots
 from raster2sensor.ogcapiprocesses import OGCAPIProcesses
 from raster2sensor.processes import zonal_statistics, calculate_ndvi
-from raster2sensor.spatial_tools import read_raster, clip_raster, plot_raster, write_raster, encode_raster_to_base64, decode_base64_to_raster
+from raster2sensor.spatialtools import read_raster, clip_raster, plot_raster, write_raster, encode_raster_to_base64, decode_base64_to_raster
 import sys
 from pathlib import Path
 
