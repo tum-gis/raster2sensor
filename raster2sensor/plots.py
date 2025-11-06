@@ -11,6 +11,7 @@ import geopandas as gpd
 from raster2sensor import config
 from raster2sensor.utils import clear, get_file_extension, create_sensorthingsapi_entity, fetch_sensorthingsapi
 from raster2sensor.sensorthingsapi import Thing, Location, Datastream
+from raster2sensor.spatialtools import convert_geometry_to_geojson
 from raster2sensor.logging import get_logger
 
 logger = get_logger(__name__)
@@ -30,12 +31,14 @@ class Plots:
         plot_id_field (str): Plot ID Field
         treatment_id_field (str): Treatment ID Field
         year (int): Year
+        datastreams (list[Datastream]): Datastreams to use for creating Things
     '''
     file_path: Path
     trial_id: str
     plot_id_field: str
     treatment_id_field: str
     year: int = field(default_factory=lambda: (datetime.now().year))
+    datastreams: list[Datastream] = field(default_factory=list)
 
     def __post_init__(self):
         if not os.path.exists(self.file_path):
@@ -63,6 +66,8 @@ class Plots:
 
         plot_things = []
         for feature in self.read_file().iterfeatures(drop_id=True):
+            # logger.debug(feature)
+            # breakpoint()
             if self.plot_id_field not in feature['properties']:
                 error_msg = f"Plot ID field '{self.plot_id_field}' does not exist in feature properties"
                 logger.error(error_msg)
@@ -72,6 +77,10 @@ class Plots:
             treatment_id = feature['properties'].get(
                 self.treatment_id_field, '') if self.treatment_id_field else ''
             geometry = feature['geometry']
+            # Convert geometry to proper GeoJSON format (tuples to lists)
+            geojson_geometry = convert_geometry_to_geojson(geometry)
+            # logger.debug(geojson_geometry)
+            # breakpoint()
             plot_thing = Thing(
                 name=f'Trial Plot - {self.trial_id}-{plot_id} ',
                 description=f'Agricultural trial plot {plot_id} belonging to trial {self.trial_id}',
@@ -99,7 +108,7 @@ class Plots:
                     )
                 ],
                 Datastreams=[
-                    # Loop through the Datastreams in the config file
+                    # Loop through the provided datastreams
                     Datastream(name=ds.name.format(
                         plot_id=f'{self.trial_id}-{plot_id}'),
                         description=ds.description.format(
@@ -109,11 +118,11 @@ class Plots:
                         Sensor=ds.Sensor,
                         ObservedProperty=ds.ObservedProperty,
                         properties=ds.properties
-                    ) for ds in config.DATASTREAMS
+                    ) for ds in self.datastreams
                 ]
             )
             plot_things.append(asdict(plot_thing))
-
+        # logger.debug(plot_things)
         batch_request = [{'id': i, 'method': 'post', 'url': 'Things', 'body': thing}
                          for i, thing in enumerate(plot_things)]
         create_sensorthingsapi_entity(
@@ -166,9 +175,9 @@ class Plots:
         # If logger.level is DEBUG write the GeoJSON to a file:
         if logger.level <= logging.DEBUG:
             logger.debug(
-                f"Writing plots GeoJSON to {config.PARCELS_GEOJSON}"
+                f"Writing plots GeoJSON to {config.PLOTS_GEOJSON}"
             )
-            with open(config.PARCELS_GEOJSON, 'w') as f:
+            with open(config.PLOTS_GEOJSON, 'w') as f:
                 json.dump(plots_geojson, f, indent=2)
         return plots_geojson
 
@@ -409,14 +418,15 @@ class Plots:
 
 if __name__ == "__main__":
     clear()
-    # ----- Geotheweg-2024 -----
-    plots = Plots(
-        file_path=Path('gis_data\\plots_goetheweg-2024.geojson'),
-        trial_id='Goetheweg-2024',
-        plot_id_field='ID',
-        treatment_id_field='',
-        year=2024
-    )
+    # # ----- Geotheweg-2024 -----
+    # plots = Plots(
+    #     file_path=Path('data\\plots_goetheweg-2024.geojson'),
+    #     trial_id='Goetheweg-2024',
+    #     plot_id_field='ID',
+    #     treatment_id_field='',
+    #     year=2024,
+    #     datastreams=config.DATASTREAMS
+    # )
     # plots.create_sensorthings_things()
     # plots.add_datastreams(
     #     trial_id='Goetheweg-2024',
@@ -425,11 +435,12 @@ if __name__ == "__main__":
 
     # ----- Ochsenwasen-2025 -----
     plots = Plots(
-        file_path=Path('gis_data\\plots_ochsenwasen-2025.geojson'),
+        file_path=Path('data\\plots_ochsenwasen-2025.geojson'),
         trial_id='Ochsenwasen-2025',
         plot_id_field='plot_id',
         treatment_id_field='treat_id',
-        year=2025
+        year=2025,
+        datastreams=config.DATASTREAMS
     )
-    # plots.create_sensorthings_things()
-    plots.fetch_plots_geojson('Ochsenwasen-2025')
+    plots.create_sensorthings_things()
+    # plots.fetch_plots_geojson('Ochsenwasen-2025')

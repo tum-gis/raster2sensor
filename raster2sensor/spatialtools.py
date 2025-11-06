@@ -1,6 +1,5 @@
 import os
 import base64
-from rich import print
 from math import radians, cos
 import matplotlib.pyplot as plt
 from osgeo import ogr, gdal
@@ -183,3 +182,54 @@ def decode_base64_to_raster(base64_encoded: str) -> gdal.Dataset:
     decoded_raster = gdal.Open('/vsimem/temp.tif')
 
     return decoded_raster
+
+
+def convert_geometry_to_geojson(geometry):
+    """
+    Convert geometry coordinates from tuples to lists for proper GeoJSON format.
+
+    GeoPandas sometimes returns coordinates as tuples, but GeoJSON requires arrays (lists).
+    This function recursively converts tuples to lists in the coordinates.
+
+    Args:
+        geometry (dict): Geometry object from GeoPandas
+
+    Returns:
+        dict: Geometry with coordinates as lists
+    """
+    if not isinstance(geometry, dict):
+        return geometry
+
+    # Create a copy to avoid modifying the original
+    geom_copy = geometry.copy()
+
+    if 'coordinates' in geom_copy:
+        geom_copy['coordinates'] = _convert_coordinates(
+            geom_copy['coordinates'])
+
+    return geom_copy
+
+
+def _convert_coordinates(coords):
+    """
+    Recursively convert coordinate tuples to lists.
+
+    Args:
+        coords: Coordinates that may be tuples or nested structures
+
+    Returns:
+        Coordinates as lists
+    """
+    if isinstance(coords, tuple):
+        # If it's a tuple of numbers (coordinate pair), convert to list
+        if len(coords) == 2 and all(isinstance(x, (int, float)) for x in coords):
+            return list(coords)
+        # Otherwise, it's a nested structure, convert each element
+        else:
+            return [_convert_coordinates(item) for item in coords]
+    elif isinstance(coords, list):
+        # Recursively process each element in the list
+        return [_convert_coordinates(item) for item in coords]
+    else:
+        # Base case: return the item as-is (numbers, strings, etc.)
+        return coords

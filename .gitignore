@@ -124,6 +124,7 @@ celerybeat.pid
 # Environments
 .env
 .venv
+.idea
 env/
 venv/
 ENV/
@@ -163,7 +164,7 @@ cython_debug/
 
 
 # GIS
-/gis_data/
+/data/
 *.tif
 *.tiff
 *.geotiff
