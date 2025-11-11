@@ -1,3 +1,8 @@
+""" #FIXME: 
+DEPRECATED!
+Configuration module for Raster2Sensor application.
+"""
+
 import os
 from dotenv import load_dotenv, find_dotenv
 from raster2sensor.sensorthingsapi import UnitOfMeasurement, Datastream

@@ -1,6 +1,10 @@
 trial_id: Goetheweg-2024
 plot_id_field: ID
 year: 2024
+sensorthingsapi_url: "http://localhost:8080/FROST-Server/v1.1"
+pygeoapi_url: "http://localhost:5000"
+# sensorthingsapi_url: "https://tuzehez-fairagro.srv.mwn.de/frost/v1.1"
+# pygeoapi_url: "https://tuzehez-fairagro.srv.mwn.de/pygeoapi"
 # Datastreams
 datastreams:
   # NDVI - Normalized Difference Vegetation Index
@@ -114,47 +118,46 @@ datastreams:
 
 # Raster Images
 raster_images:
-- path: data/DOP_AD24_TD_D4_V2_M600-Tetracam_3cm_UTM32.tif
-  timestamp: '2024-05-23T09:00:00+01:00'
-  description: UAV Image from May 23, 2024
-- path: data/dop20_rgb.tif
+- path: D:\\GISDATA\\FAIRagro_Data\\UAV Images\\2024\\Tetracam_MS_Images\\DOP_20240306_TD_D1_Rangacker_MCA_4cm_UTM32.tif
   timestamp: '2024-03-06T09:00:00+01:00'
-  description: RGB orthophoto
+- path: D:\\GISDATA\\FAIRagro_Data\\UAV Images\\2024\\Tetracam_MS_Images\\DOP_AD24_TD_20240405_D2_MCA_V2_3cm_UTM32.tif
+  timestamp: '2024-04-05T09:00:00+01:00'
+- path: D:\\GISDATA\\FAIRagro_Data\\UAV Images\\2024\\Tetracam_MS_Images\\DOP_20240522_AD24_TD_V2_MCA_3cm_UTM32.tif
+  timestamp: '2024-05-22T09:00:00+01:00'
+- path: D:\\GISDATA\\FAIRagro_Data\\UAV Images\\2024\\Tetracam_MS_Images\\DOP_AD24_TD_D4_V2_M600-Tetracam_3cm_UTM32.tif
+  timestamp: '2024-05-23T09:00:00+01:00'
+- path: D:\\GISDATA\\FAIRagro_Data\\UAV Images\\2024\\Tetracam_MS_Images\\DOP_AD24_TD_D5_V2_M600_MS_TTC_3cm_UTM32.tif
+  timestamp: '2024-06-11T09:00:00+01:00'
 vegetation_indices:
 - name: NDVI
   process: ndvi
   bands:
     red_band: 2
     nir_band: 5
-  description: Normalized Difference Vegetation Index
 - name: NDRE
   process: ndre
   bands:
     red_edge_band: 3
     nir_band: 5
-  description: Normalized Difference Red Edge Index
 - name: GNDVI
   process: gndvi
   bands:
     green_band: 1
     nir_band: 5
-  description: Green Normalized Difference Vegetation Index
 - name: SAVI
   process: savi
   bands:
     red_band: 2
     nir_band: 5
-  description: Soil Adjusted Vegetation Index
 - name: CIRedEdge
   process: cirededge
   bands:
     red_edge_band: 3
     nir_band: 5
-  description: Chlorophyll Index Red Edge
 - name: MCARI
   process: mcari
   bands:
     red_band: 2
     green_band: 1
     nir_band: 5
-  description: Modified Chlorophyll Absorption Ratio Index
+

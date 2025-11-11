@@ -74,7 +74,7 @@ def clip_raster(raster_dataset: gdal.Dataset, polygon_layer: ogr.Layer) -> gdal.
     # TODO always reproject the rasters to match the vector CRS (4326)
     # Reproject raster if needed
     if polygon_layer_srs and polygon_layer_srs.ExportToWkt() != raster_dataset_srs:
-        logger.info("Reprojecting raster to match vector CRS...")
+        logger.debug("Reprojecting raster to match vector CRS...")
         reprojected_ds = gdal.Warp('', raster_dataset, format='MEM',
                                    dstSRS=polygon_layer_srs.ExportToWkt())
         if isinstance(reprojected_ds, gdal.Dataset):
@@ -89,7 +89,7 @@ def clip_raster(raster_dataset: gdal.Dataset, polygon_layer: ogr.Layer) -> gdal.
 
     # TODO : Logger debug & error messages
     if clipped_ds:
-        logger.info("✅ Clipping successful, returning GDAL dataset.")
+        logger.debug("✅ Clipping successful, returning GDAL dataset.")
     else:
         logger.error("❌ Clipping failed.")
 

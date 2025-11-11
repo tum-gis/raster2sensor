@@ -45,7 +45,7 @@ class OGCAPIProcesses:
             inputs (dict): Inputs for the Process
         '''
         logger.info(
-            f'Executing OGC API - Process {process_id}')
+            f'Executing OGC API - Process "{process_id}"')
         # Add code here to execute OGC API - Process
         headers = {'Content-Type': 'application/json'}
         data = {'inputs': inputs}
