@@ -301,7 +301,7 @@ def process_images_from_config_file(config: Config) -> List[ProcessingResult]:
     )
     results = processor.process()
 
-    # Print summary
+    # Log summary
     ImageProcessor.log_results_summary(results)
 
     return results

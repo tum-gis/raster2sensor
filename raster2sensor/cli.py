@@ -1,9 +1,36 @@
+#!/usr/bin/env python3
+"""
+Command Line Interface for Raster2Sensor
+
+This module provides the command-line interface for the Raster2Sensor application,
+which enables processing of raster imagery data and integration with OGC SensorThings API.
+
+The CLI supports various operations including:
+- Managing trial plots in SensorThings API
+- Processing raster images with vegetation indices
+- Executing OGC API Processes
+- Configuration management
+
+Author: Joseph Gitahi
+Created: 2025
+License: MIT License
+Repository: https://github.com/joemureithi/raster2sensor
+
+Key Dependencies:
+    - typer: Modern CLI framework
+    - rich: Rich text and beautiful formatting
+
+Usage:
+    python -m raster2sensor --help
+    python -m raster2sensor plots create --config config.yml --file-path plots.geojson
+    python -m raster2sensor process-images --config config.yml --dry-run
+"""
+
 import typer
 from pathlib import Path
 from datetime import datetime
 from typing import Optional
 from rich.console import Console
-from raster2sensor import config
 from raster2sensor import __app_name__, __version__
 from raster2sensor.logging import configure_logging, get_logger
 from raster2sensor.utils import clear
@@ -35,10 +62,6 @@ app.add_typer(plots_app, name="plots",
               help="Trial plots management in OGC SensorThings API commands")
 app.add_typer(processes_app, name="processes",
               help="OGC API - Processes commands")
-
-# Initialize OGC API Processes
-ogc_api_processes = OGCAPIProcesses(
-    config.PYGEOAPI_URL or "http://localhost:5000")
 
 
 # Main callback
@@ -295,69 +318,143 @@ def add_datastreams(
         raise typer.Exit(1)
 
 
-@plots_app.command("generate-config")
-def generate_config(
-    output_path: str = typer.Option(...,
-                                    help="Path to save the sample configuration file"),
-    format_type: str = typer.Option(
-        "yaml", help="Configuration format: 'yaml' or 'json'")
-):
-    """
-    Generate a sample unified configuration file.
-
-    This command creates a sample YAML or JSON configuration file that can be used
-    with the create and add-datastreams commands. The file contains datastreams, 
-    trial metadata, and other required configuration.
-    """
-    clear()
-    logger.info(f"Generating sample configuration file: {output_path}")
-
-    try:
-        if format_type.lower() not in ['yaml', 'json']:
-            console.print(
-                "[red]Error: format_type must be 'yaml' or 'json'[/red]")
-            raise typer.Exit(1)
-
-        ConfigParser.create_sample_config(output_path, format_type.lower())
-        console.print(
-            f"[green]Sample configuration file created: {output_path}[/green]")
-        console.print(
-            "[cyan]You can now edit this file and use it with the --config option[/cyan]")
-
-    except Exception as e:
-        console.print(f"[red]Error generating configuration file: {e}[/red]")
-        logger.error(f"Error generating config file {output_path}: {e}")
-        raise typer.Exit(1)
-
-
 # =============================================================================
 # PROCESSES COMMANDS
 # =============================================================================
 
 @processes_app.command("fetch")
-def fetch_processes():
+def fetch_processes(
+    pygeoapi_url: str = typer.Option(None, help="PyGeoAPI URL"),
+    config_file: str = typer.Option(
+        None, "--config", help="Path to configuration file (YAML or JSON) containing pygeoapi_url")
+):
     """
     Fetch available OGC API Processes.
+
+    You can provide either:
+    - Individual parameter: --pygeoapi-url
+    - Configuration file: --config (containing pygeoapi_url)
     """
     clear()
-    ogc_api_processes.get_processes()
+
+    # Validate input parameters
+    if config_file and pygeoapi_url:
+        logger.error(
+            "Cannot specify both --config and --pygeoapi-url. Choose one approach.")
+        raise typer.Exit(1)
+
+    if not config_file and not pygeoapi_url:
+        logger.error(
+            "Must specify either --config file OR --pygeoapi-url")
+        raise typer.Exit(1)
+
+    try:
+        if config_file:
+            # Load configuration from file
+            logger.info(f"Loading configuration from: {config_file}")
+            config = ConfigParser.load_config(config_file)
+            effective_pygeoapi_url = config.pygeoapi_url
+            logger.info(
+                f"Using pygeoapi_url from config: {effective_pygeoapi_url}")
+        else:
+            # Use provided argument
+            effective_pygeoapi_url = pygeoapi_url
+            logger.info(
+                f"Using provided pygeoapi_url: {effective_pygeoapi_url}")
+
+        if not effective_pygeoapi_url:
+            logger.error("pygeoapi_url must be specified")
+            raise typer.Exit(1)
+
+        # Initialize OGC API Processes with the effective URL
+        ogc_processes = OGCAPIProcesses(effective_pygeoapi_url)
+        ogc_processes.get_processes()
+
+    except FileNotFoundError as e:
+        logger.error(f"Configuration file not found: {e}")
+        raise typer.Exit(1)
+    except ValueError as e:
+        logger.error(f"Configuration error: {e}")
+        raise typer.Exit(1)
+    except Exception as e:
+        logger.error(f"Error fetching processes: {e}")
+        raise typer.Exit(1)
 
 
 @processes_app.command("describe")
-def describe_process(process_id: str):
+def describe_process(
+    process_id: str = typer.Option(...,
+                                   help="The ID of the process to describe"),
+    pygeoapi_url: str = typer.Option(None, help="PyGeoAPI URL"),
+    config_file: str = typer.Option(
+        None, "--config", help="Path to configuration file (YAML or JSON) containing pygeoapi_url")
+):
     """
     Describe a specific OGC API Process.
 
+    You can provide either:
+    - Individual parameter: --pygeoapi-url
+    - Configuration file: --config (containing pygeoapi_url)
+
     Args:
-        process_id (str) : The ID of the process to describe
+        process_id: The ID of the process to describe
+        pygeoapi_url: PyGeoAPI URL 
+        config_file: Path to configuration file
     """
     clear()
-    ogc_api_processes.describe_process(process_id)
+
+    # Validate input parameters
+    if config_file and pygeoapi_url:
+        logger.error(
+            "Cannot specify both --config and --pygeoapi-url. Choose one approach.")
+        raise typer.Exit(1)
+
+    if not config_file and not pygeoapi_url:
+        logger.error(
+            "Must specify either --config file OR --pygeoapi-url")
+        raise typer.Exit(1)
+
+    try:
+        if config_file:
+            # Load configuration from file
+            logger.info(f"Loading configuration from: {config_file}")
+            config = ConfigParser.load_config(config_file)
+            effective_pygeoapi_url = config.pygeoapi_url
+            logger.info(
+                f"Using pygeoapi_url from config: {effective_pygeoapi_url}")
+        else:
+            # Use provided argument
+            effective_pygeoapi_url = pygeoapi_url
+            logger.info(
+                f"Using provided pygeoapi_url: {effective_pygeoapi_url}")
+
+        if not effective_pygeoapi_url:
+            logger.error("pygeoapi_url must be specified")
+            raise typer.Exit(1)
+
+        # Initialize OGC API Processes with the effective URL
+        ogc_processes = OGCAPIProcesses(effective_pygeoapi_url)
+        ogc_processes.describe_process(process_id)
+
+    except FileNotFoundError as e:
+        logger.error(f"Configuration file not found: {e}")
+        raise typer.Exit(1)
+    except ValueError as e:
+        logger.error(f"Configuration error: {e}")
+        raise typer.Exit(1)
+    except Exception as e:
+        logger.error(f"Error describing process {process_id}: {e}")
+        raise typer.Exit(1)
 
 
+# TODO: Generic execute command
 @processes_app.command("execute")
 def execute_process(
-    process_id: str,
+    process_id: str = typer.Option(...,
+                                   help="The ID of the process to execute"),
+    pygeoapi_url: str = typer.Option(None, help="PyGeoAPI URL"),
+    config_file: str = typer.Option(
+        None, "--config", help="Path to configuration file (YAML or JSON) containing pygeoapi_url"),
     input_file: Optional[str] = typer.Option(None, help="Input file path"),
     output_file: Optional[str] = typer.Option(None, help="Output file path"),
     sync: bool = typer.Option(True, help="Execute synchronously")
@@ -365,26 +462,77 @@ def execute_process(
     """
     Execute a specific OGC API Process.
 
+    You can provide either:
+    - Individual parameter: --pygeoapi-url
+    - Configuration file: --config (containing pygeoapi_url)
+
     Args:
         process_id: The ID of the process to execute
+        pygeoapi_url: PyGeoAPI URL
+        config_file: Path to configuration file
         input_file: Path to input file (optional)
         output_file: Path to output file (optional)
         sync: Whether to execute synchronously (default: True)
     """
     clear()
-    console.print(f"[cyan]Executing process: {process_id}[/cyan]")
 
-    if input_file:
-        console.print(f"[dim]Input file: {input_file}[/dim]")
-    if output_file:
-        console.print(f"[dim]Output file: {output_file}[/dim]")
+    # Validate input parameters
+    if config_file and pygeoapi_url:
+        logger.error(
+            "Cannot specify both --config and --pygeoapi-url. Choose one approach.")
+        raise typer.Exit(1)
 
-    execution_mode = "synchronous" if sync else "asynchronous"
-    console.print(f"[dim]Execution mode: {execution_mode}[/dim]")
+    if not config_file and not pygeoapi_url:
+        logger.error(
+            "Must specify either --config file OR --pygeoapi-url")
+        raise typer.Exit(1)
 
-    # TODO: Implement process execution functionality
-    console.print(
-        '[yellow]Note: execute_process() function needs implementation[/yellow]')
+    try:
+        if config_file:
+            # Load configuration from file
+            logger.info(f"Loading configuration from: {config_file}")
+            config = ConfigParser.load_config(config_file)
+            effective_pygeoapi_url = config.pygeoapi_url
+            logger.info(
+                f"Using pygeoapi_url from config: {effective_pygeoapi_url}")
+        else:
+            # Use provided argument
+            effective_pygeoapi_url = pygeoapi_url
+            logger.info(
+                f"Using provided pygeoapi_url: {effective_pygeoapi_url}")
+
+        if not effective_pygeoapi_url:
+            logger.error("pygeoapi_url must be specified")
+            raise typer.Exit(1)
+
+        console.print(f"[cyan]Executing process: {process_id}[/cyan]")
+        console.print(f"[dim]PyGeoAPI URL: {effective_pygeoapi_url}[/dim]")
+
+        if input_file:
+            console.print(f"[dim]Input file: {input_file}[/dim]")
+        if output_file:
+            console.print(f"[dim]Output file: {output_file}[/dim]")
+
+        execution_mode = "synchronous" if sync else "asynchronous"
+        console.print(f"[dim]Execution mode: {execution_mode}[/dim]")
+
+        # TODO: Implement process execution functionality
+        console.print(
+            '[yellow]Note: execute_process() function needs implementation[/yellow]')
+
+        # Initialize OGC API Processes with the effective URL
+        # ogc_processes = OGCAPIProcesses(effective_pygeoapi_url)
+        # ogc_processes.execute_process(process_id, input_data, sync)
+
+    except FileNotFoundError as e:
+        logger.error(f"Configuration file not found: {e}")
+        raise typer.Exit(1)
+    except ValueError as e:
+        logger.error(f"Configuration error: {e}")
+        raise typer.Exit(1)
+    except Exception as e:
+        logger.error(f"Error executing process {process_id}: {e}")
+        raise typer.Exit(1)
 
 
 @app.command("process-images")
@@ -561,18 +709,18 @@ def create_sample_config(
     )
 ):
     """
-    Create a sample configuration file with datastreams, raster images, and vegetation indices.
+    Create a sample configuration file with all parameters required to run raster2sensor tool.
 
-    This creates a comprehensive configuration file that can be used with the process-images command.
+    This creates a comprehensive configuration file, which includes trial metadata, datastreams, raster images, and vegetation indices.
     """
     clear()
-    console.print("[cyan]Creating sample  configuration file[/cyan]")
+    logger.info("Creating sample configuration file")
 
     try:
         ConfigParser.create_sample_config(output_path, format)
         console.print(
             f"[green]✓[/green] Sample configuration created: [cyan]{output_path}[/cyan]")
-        console.print("\nYou can now edit this file and use it with:")
+        console.print("\nYou can now edit this file and use it, e.g.:")
         console.print(
             f"[dim]python -m raster2sensor process-images --config {output_path}[/dim]")
 

@@ -136,8 +136,7 @@ def write_raster(raster_dataset: gdal.Dataset, output_file: str):
     # Get the driver
     driver = gdal.GetDriverByName('GTiff')
     # Create the output raster
-    output_raster = driver.CreateCopy(output_file, raster_dataset)
-    output_raster = None
+    driver.CreateCopy(output_file, raster_dataset)
 
 
 def encode_raster_to_base64(raster_dataset: gdal.Dataset) -> str:
