@@ -4,6 +4,98 @@ FAIRagro UAV Images Processing
 
 ## Installation
 
+### 🚀 **Quick Installation**
+
+The installation process is now platform-specific for the best user experience:
+
+#### **Linux/macOS (Automatic):**
+
+```bash
+# One command - GDAL and GeoPandas included automatically!
+pip install raster2sensor
+```
+
+#### **Windows (Manual Prerequisites):**
+
+```bash
+# Step 1: Install geospatial dependencies first
+conda install -c conda-forge gdal geopandas
+
+# Step 2: Install raster2sensor
+pip install raster2sensor
+```
+
+> **Why different approaches?** GDAL installation via pip works reliably on Linux/macOS but can be problematic on Windows due to binary compatibility issues. This approach gives you the smoothest experience on each platform.
+
+### Alternative Installation Methods
+
+#### 🥇 **Method 1: Conda (Works on all platforms)**
+
+```bash
+# Create environment with geospatial packages
+conda create -n raster2sensor -c conda-forge python=3.11 gdal geopandas
+conda activate raster2sensor
+
+# Install raster2sensor 
+pip install raster2sensor
+```
+
+#### 🥈 **Method 2: System packages (Linux/macOS)**
+
+**Linux (Ubuntu/Debian):**
+
+```bash
+sudo apt-get install gdal-bin libgdal-dev
+pip install raster2sensor  # GDAL included automatically
+```
+
+**macOS (Homebrew):**
+
+```bash
+brew install gdal
+pip install raster2sensor  # GDAL included automatically
+```
+
+**Windows (conda-forge wheels):**
+
+```bash
+pip install --find-links https://girder.github.io/large_image_wheels GDAL
+pip install geopandas raster2sensor
+```
+
+### Development Installation
+
+For development with all optional dependencies:
+
+```bash
+git clone https://github.com/FAIRagro/raster2sensor.git
+cd raster2sensor
+pip install -e .[dev,full]
+```
+
+### Verify Installation
+
+Test your installation:
+
+```bash
+raster2sensor --version
+python -c "import geopandas, rasterio; print('✅ Geospatial dependencies OK')"
+```
+
+### Troubleshooting
+
+If you encounter issues, use the built-in diagnostic tool:
+
+```bash
+# Check your GDAL and geospatial setup
+check-gdal
+
+# Or run the standalone checker
+python check_gdal.py
+```
+
+This tool will help identify missing dependencies and provide specific installation guidance for your system.
+
 ## Usage
 
 `raster2sensor` - A tool for raster data processing and OGC SensorThings API integration.

@@ -1,49 +1,96 @@
+# -*- coding: utf-8 -*-
 from setuptools import setup
 import sys
 import os
 
-# Base requirements that work on all platforms
-base_requirements = [
-    'requests',
-    'typer',
-    'rich',
-    'matplotlib',
-    'PyYAML',
-    'python-dotenv',
-    'shapely>=2.1.1',
+
+def show_gdal_installation_help():
+    """Display helpful GDAL installation instructions for Windows users."""
+    print("\n" + "="*70)
+    print("🗺️  WINDOWS: GEOSPATIAL DEPENDENCIES REQUIRED")
+    print("="*70)
+    print("On Windows, GDAL and GeoPandas must be installed separately due to pip compatibility issues.")
+    print("(Linux/macOS users get these dependencies automatically via pip!)\n")
+
+    if sys.platform == 'win32':
+        print("Windows Installation (choose one method):\n")
+        print("🥇 CONDA (Recommended - most reliable):")
+        print("   conda install -c conda-forge gdal geopandas")
+        print("   pip install raster2sensor\n")
+        print("🥈 PIP with conda-forge wheels:")
+        print(
+            "   pip install --find-links https://girder.github.io/large_image_wheels GDAL")
+        print("   pip install geopandas raster2sensor\n")
+        print("🥉 OSGeo4W (advanced users):")
+        print("   Install OSGeo4W: https://trac.osgeo.org/osgeo4w/")
+        print("   Set GDAL_DATA environment variable")
+        print("   pip install geopandas raster2sensor")
+    else:
+        print("Linux/macOS Installation:\n")
+        print("📦 System packages (Ubuntu/Debian):")
+        print("   sudo apt-get install gdal-bin libgdal-dev")
+        print("   pip install geopandas raster2sensor\n")
+        print("🍺 Homebrew (macOS):")
+        print("   brew install gdal")
+        print("   pip install geopandas raster2sensor\n")
+        print("🐍 Conda (all platforms):")
+        print("   conda install -c conda-forge gdal geopandas")
+        print("   pip install raster2sensor")
+
+    print("\n💡 More help: https://geopandas.org/en/stable/getting_started/install.html")
+    print("🔧 Use 'check-gdal' command after installation to verify setup")
+    print("="*70 + "\n")
+
+
+# Core requirements - these install reliably via pip on all platforms
+install_requirements = [
+    'requests>=2.25.0',
+    'typer[all]>=0.9.0',
+    'rich>=13.0.0',
+    'matplotlib>=3.5.0',
+    'PyYAML>=6.0',
+    'python-dotenv>=0.19.0',
+    'shapely>=2.0.0',
 ]
 
-# Platform-specific or problematic requirements
-# GDAL and geopandas should be installed separately on Windows
-optional_requirements = [
-    'geopandas>=1.1.1',
-]
+# Platform-specific geospatial dependencies
+# GDAL pip installation works fine on Linux/macOS but is problematic on Windows
+if sys.platform != 'win32':
+    # Linux/macOS: Include geospatial dependencies for smooth installation
+    install_requirements.extend([
+        'GDAL>=3.5.0',
+        'geopandas>=1.0.0',
+    ])
+    print("📍 Linux/macOS detected: Including GDAL and GeoPandas in pip installation")
 
-# Only add GDAL if not on Windows or if conda environment is detected
-install_requirements = base_requirements.copy()
+# Check if we're in a conda environment (safer for geospatial packages)
+is_conda = any([
+    'CONDA_DEFAULT_ENV' in os.environ,
+    'CONDA_PREFIX' in os.environ,
+    'MAMBA_ROOT_PREFIX' in os.environ,
+])
 
-# # Check if we're in a conda environment (safer for GDAL)
-# is_conda = 'CONDA_DEFAULT_ENV' in os.environ or 'CONDA_PREFIX' in os.environ
+# Check if GDAL is already available
+gdal_available = False
+try:
+    import importlib.util
+    gdal_specs = [
+        importlib.util.find_spec("gdal"),
+        importlib.util.find_spec("osgeo.gdal"),
+        importlib.util.find_spec("osgeo")
+    ]
+    gdal_available = any(spec is not None for spec in gdal_specs)
+except ImportError:
+    pass
 
-# if sys.platform != 'win32' or is_conda:
-#     # Add GDAL and geopandas if not on Windows or in conda environment
-#     install_requirements.extend([
-#         'GDAL>=3.11.0',
-#         'geopandas>=1.1.1',
-#     ])
-# else:
-#     # On Windows without conda, print installation instructions
-#     print("\n" + "="*60)
-#     print("WINDOWS INSTALLATION NOTE:")
-#     print("GDAL and geopandas require special handling on Windows.")
-#     print("Please install them using one of these methods:")
-#     print("\n1. Using conda (recommended):")
-#     print("   conda install -c conda-forge gdal geopandas")
-#     print("\n2. Using pip with pre-compiled wheels:")
-#     print("   pip install GDAL --find-links https://www.lfd.uci.edu/~gohlke/pythonlibs/")
-#     print("   pip install geopandas")
-#     print("\n3. Install OSGeo4W and set GDAL_DATA environment variable")
-#     print("="*60 + "\n")
+# Windows: Follow Rasterio's approach (GDAL pip issues)
+# Linux/macOS: Include GDAL in pip for smooth experience
+if sys.platform == 'win32' and not gdal_available and not is_conda:
+    show_gdal_installation_help()
+    print("\n⚠️  Note: On Windows, GDAL and GeoPandas must be installed separately.")
+    print("After installing them, run: pip install raster2sensor\n")
+elif sys.platform != 'win32':
+    print("✅ Linux/macOS: GDAL and GeoPandas will be installed automatically via pip")
 
 setup(
     name='raster2sensor',
@@ -55,15 +102,23 @@ setup(
     packages=['raster2sensor'],
     install_requires=install_requirements,
     extras_require={
-        'full': [
-            # 'GDAL>=3.11.0',
-            'geopandas>=1.1.1',
+        'test': [
+            'pytest>=6.0.0',
+            'pytest-cov>=3.0.0',
+            'pytest-mock>=3.6.0',
         ],
         'dev': [
-            'pytest',
-            'pytest-cov',
-            'black',
-            'flake8',
+            'pytest>=6.0.0',
+            'pytest-cov>=3.0.0',
+            'black>=22.0.0',
+            'flake8>=4.0.0',
+            'mypy>=0.950',
+            'isort>=5.10.0',
+        ],
+        'docs': [
+            'sphinx>=4.0.0',
+            'sphinx-rtd-theme>=1.0.0',
+            'myst-parser>=0.17.0',
         ]
     },
     python_requires='>=3.8',
@@ -80,6 +135,7 @@ setup(
     entry_points={
         'console_scripts': [
             'raster2sensor=raster2sensor.cli:app',
+            'check-gdal=check_gdal:main',
         ],
     },
 )
