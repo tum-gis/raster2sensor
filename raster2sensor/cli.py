@@ -534,6 +534,8 @@ def execute_process(
         logger.error(f"Error executing process {process_id}: {e}")
         raise typer.Exit(1)
 
+# TODO: *Consider adding an optional output file (JSON) of the computed vegetation indices
+
 
 @app.command("process-images")
 def process_images(
