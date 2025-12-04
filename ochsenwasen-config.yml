@@ -2,9 +2,9 @@ trial_id: Ochsenwasen-2025
 plot_id_field: plot_id
 year: 2025
 # sensorthingsapi_url: "http://localhost:8080/FROST-Server/v1.1"
-# pygeoapi_url: "http://localhost:5000"
+pygeoapi_url: "http://localhost:5000"
 sensorthingsapi_url: "https://tuzehez-fairagro.srv.mwn.de/frost/v1.1"
-pygeoapi_url: "https://tuzehez-fairagro.srv.mwn.de/pygeoapi"
+# pygeoapi_url: "https://tuzehez-fairagro.srv.mwn.de/pygeoapi"
 # Datastreams
 datastreams:
   # NDVI - Normalized Difference Vegetation Index
@@ -118,12 +118,12 @@ datastreams:
 
 # Raster Images
 raster_images:
-# - path: D:\\GISDATA\\FAIRagro_Data\\UAV Images\\2025\\20250506\\250506_Fairagro_DOP.tif
-#   timestamp: '2025-05-06T09:00:00+01:00'
-# - path: D:\\GISDATA\\FAIRagro_Data\\UAV Images\\2025\\20250602\\250602_Fairagro_DOP.tif
-#   timestamp: '2025-06-02T09:00:00+01:00'
-# - path: D:\\GISDATA\\FAIRagro_Data\\UAV Images\\2025\\20250625\\20250625_dop.tif
-#   timestamp: '2025-06-25T09:00:00+01:00'
+- path: D:\\GISDATA\\FAIRagro_Data\\UAV Images\\2025\\20250506\\250506_Fairagro_DOP.tif
+  timestamp: '2025-05-06T09:00:00+01:00'
+- path: D:\\GISDATA\\FAIRagro_Data\\UAV Images\\2025\\20250602\\250602_Fairagro_DOP.tif
+  timestamp: '2025-06-02T09:00:00+01:00'
+- path: D:\\GISDATA\\FAIRagro_Data\\UAV Images\\2025\\20250625\\20250625_dop.tif
+  timestamp: '2025-06-25T09:00:00+01:00'
 - path: D:\\GISDATA\\FAIRagro_Data\\UAV Images\\2025\\20250708\\20250708.tif
   timestamp: '2025-07-08T09:00:00+01:00'
 
@@ -153,10 +153,10 @@ vegetation_indices:
   bands:
     red_edge_band: 6
     nir_band: 7
-- name: MCARI
-  process: mcari
-  bands:
-    red_band: 5
-    green_band: 4
-    nir_band: 7
+# - name: MCARI
+#   process: mcari
+#   bands:
+#     red_band: 5
+#     green_band: 4
+#     nir_band: 7
 

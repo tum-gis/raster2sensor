@@ -2,9 +2,9 @@ trial_id: Goetheweg-2024
 plot_id_field: ID
 year: 2024
 # sensorthingsapi_url: "http://localhost:8080/FROST-Server/v1.1"
-# pygeoapi_url: "http://localhost:5000"
+pygeoapi_url: "http://localhost:5000"
 sensorthingsapi_url: "https://tuzehez-fairagro.srv.mwn.de/frost/v1.1"
-pygeoapi_url: "https://tuzehez-fairagro.srv.mwn.de/pygeoapi"
+# pygeoapi_url: "https://tuzehez-fairagro.srv.mwn.de/pygeoapi"
 # Datastreams
 datastreams:
   # NDVI - Normalized Difference Vegetation Index

@@ -1,6 +1,4 @@
-# UAV Raster Images Statistics Manager
-
-FAIRagro UAV Images Processing
+# raster2sensor: FAIRagro UC6 UAV Images Processing Tool
 
 ## Installation
 
@@ -82,26 +80,13 @@ raster2sensor --version
 python -c "import geopandas, rasterio; print('✅ Geospatial dependencies OK')"
 ```
 
-### Troubleshooting
-
-If you encounter issues, use the built-in diagnostic tool:
-
-```bash
-# Check your GDAL and geospatial setup
-check-gdal
-
-# Or run the standalone checker
-python check_gdal.py
-```
-
-This tool will help identify missing dependencies and provide specific installation guidance for your system.
 
 ## Usage
 
 `raster2sensor` - A tool for raster data processing and OGC SensorThings API integration.
 
 ```console
-$ raster2sensor [OPTIONS] COMMAND [ARGS]...
+raster2sensor [OPTIONS] COMMAND [ARGS]...
 ```
 
 **Options**:
@@ -140,7 +125,7 @@ The configuration file should contain:
 **Usage**:
 
 ```console
-$ raster2sensor process-images [OPTIONS]
+raster2sensor process-images [OPTIONS]
 ```
 
 **Options**:
@@ -161,7 +146,7 @@ This creates a comprehensive configuration file, which includes trial metadata, 
 **Usage**:
 
 ```console
-$ raster2sensor create-sample-config [OPTIONS]
+raster2sensor create-sample-config [OPTIONS]
 ```
 
 **Options**:
@@ -177,7 +162,7 @@ Trial plots management in OGC SensorThings API commands
 **Usage**:
 
 ```console
-$ raster2sensor plots [OPTIONS] COMMAND [ARGS]...
+raster2sensor plots [OPTIONS] COMMAND [ARGS]...
 ```
 
 **Options**:
@@ -207,7 +192,7 @@ config_file: Path to configuration file
 **Usage**:
 
 ```console
-$ raster2sensor plots fetch [OPTIONS]
+raster2sensor plots fetch [OPTIONS]
 ```
 
 **Options**:
@@ -234,7 +219,7 @@ Parameters from the config file will be used unless explicitly overridden via co
 **Usage**:
 
 ```console
-$ raster2sensor plots create [OPTIONS]
+raster2sensor plots create [OPTIONS]
 ```
 
 **Options**:
@@ -258,7 +243,7 @@ for the specified trial. You must provide a configuration file with datastream d
 **Usage**:
 
 ```console
-$ raster2sensor plots add-datastreams [OPTIONS]
+raster2sensor plots add-datastreams [OPTIONS]
 ```
 
 **Options**:
@@ -275,7 +260,7 @@ OGC API - Processes commands
 **Usage**:
 
 ```console
-$ raster2sensor processes [OPTIONS] COMMAND [ARGS]...
+raster2sensor processes [OPTIONS] COMMAND [ARGS]...
 ```
 
 **Options**:
@@ -300,7 +285,7 @@ You can provide either:
 **Usage**:
 
 ```console
-$ raster2sensor processes fetch [OPTIONS]
+raster2sensor processes fetch [OPTIONS]
 ```
 
 **Options**:
@@ -326,7 +311,7 @@ config_file: Path to configuration file
 **Usage**:
 
 ```console
-$ raster2sensor processes describe [OPTIONS]
+raster2sensor processes describe [OPTIONS]
 ```
 
 **Options**:
@@ -356,7 +341,7 @@ sync: Whether to execute synchronously (default: True)
 **Usage**:
 
 ```console
-$ raster2sensor processes execute [OPTIONS]
+raster2sensor processes execute [OPTIONS]
 ```
 
 **Options**:
@@ -417,7 +402,7 @@ The configuration file should contain:
 **Usage**:
 
 ```console
-$ raster2sensor process-images [OPTIONS]
+raster2sensor process-images [OPTIONS]
 ```
 
 **Options**:
@@ -438,7 +423,7 @@ This creates a comprehensive configuration file, which includes trial metadata, 
 **Usage**:
 
 ```console
-$ raster2sensor create-sample-config [OPTIONS]
+raster2sensor create-sample-config [OPTIONS]
 ```
 
 **Options**:
@@ -454,7 +439,7 @@ Trial plots management in OGC SensorThings API commands
 **Usage**:
 
 ```console
-$ raster2sensor plots [OPTIONS] COMMAND [ARGS]...
+raster2sensor plots [OPTIONS] COMMAND [ARGS]...
 ```
 
 **Options**:
@@ -484,7 +469,7 @@ config_file: Path to configuration file
 **Usage**:
 
 ```console
-$ raster2sensor plots fetch [OPTIONS]
+raster2sensor plots fetch [OPTIONS]
 ```
 
 **Options**:
@@ -511,7 +496,7 @@ Parameters from the config file will be used unless explicitly overridden via co
 **Usage**:
 
 ```console
-$ raster2sensor plots create [OPTIONS]
+raster2sensor plots create [OPTIONS]
 ```
 
 **Options**:
@@ -535,7 +520,7 @@ for the specified trial. You must provide a configuration file with datastream d
 **Usage**:
 
 ```console
-$ raster2sensor plots add-datastreams [OPTIONS]
+raster2sensor plots add-datastreams [OPTIONS]
 ```
 
 **Options**:
@@ -552,7 +537,7 @@ OGC API - Processes commands
 **Usage**:
 
 ```console
-$ raster2sensor processes [OPTIONS] COMMAND [ARGS]...
+raster2sensor processes [OPTIONS] COMMAND [ARGS]...
 ```
 
 **Options**:
@@ -577,7 +562,7 @@ You can provide either:
 **Usage**:
 
 ```console
-$ raster2sensor processes fetch [OPTIONS]
+raster2sensor processes fetch [OPTIONS]
 ```
 
 **Options**:
@@ -603,7 +588,7 @@ config_file: Path to configuration file
 **Usage**:
 
 ```console
-$ raster2sensor processes describe [OPTIONS]
+raster2sensor processes describe [OPTIONS]
 ```
 
 **Options**:
@@ -626,14 +611,16 @@ Args:
 process_id: The ID of the process to execute
 pygeoapi_url: PyGeoAPI URL
 config_file: Path to configuration file
-input_file: Path to input file (optional)
-output_file: Path to output file (optional)
+inputs: Dictionary of input parameters for the process
 sync: Whether to execute synchronously (default: True)
+
+Returns:
+    Result of the process execution
 
 **Usage**:
 
 ```console
-$ raster2sensor processes execute [OPTIONS]
+raster2sensor processes execute [OPTIONS]
 ```
 
 **Options**:
@@ -641,7 +628,6 @@ $ raster2sensor processes execute [OPTIONS]
 - `--process-id TEXT`: The ID of the process to execute [required]
 - `--pygeoapi-url TEXT`: PyGeoAPI URL
 - `--config TEXT`: Path to configuration file (YAML or JSON) containing pygeoapi_url
-- `--input-file TEXT`: Input file path
-- `--output-file TEXT`: Output file path
+- `--inputs TEXT`: Dictionary of input parameters for the process
 - `--sync / --no-sync`: Execute synchronously [default: sync]
 - `--help`: Show this message and exit.

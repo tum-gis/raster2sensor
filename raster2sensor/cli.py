@@ -455,9 +455,9 @@ def execute_process(
     pygeoapi_url: str = typer.Option(None, help="PyGeoAPI URL"),
     config_file: str = typer.Option(
         None, "--config", help="Path to configuration file (YAML or JSON) containing pygeoapi_url"),
-    input_file: Optional[str] = typer.Option(None, help="Input file path"),
-    output_file: Optional[str] = typer.Option(None, help="Output file path"),
-    sync: bool = typer.Option(True, help="Execute synchronously")
+    inputs: Optional[dict] = typer.Option(
+        None, help="Input parameters for the process"),
+    # sync: bool = typer.Option(True, help="Execute synchronously")
 ):
     """
     Execute a specific OGC API Process.
@@ -470,11 +470,13 @@ def execute_process(
         process_id: The ID of the process to execute
         pygeoapi_url: PyGeoAPI URL
         config_file: Path to configuration file
-        input_file: Path to input file (optional)
-        output_file: Path to output file (optional)
+        inputs: Dictionary of input parameters for the process
         sync: Whether to execute synchronously (default: True)
+    Returns:
+        Result of the process execution
     """
     clear()
+    result = None
 
     # Validate input parameters
     if config_file and pygeoapi_url:
@@ -508,21 +510,16 @@ def execute_process(
         console.print(f"[cyan]Executing process: {process_id}[/cyan]")
         console.print(f"[dim]PyGeoAPI URL: {effective_pygeoapi_url}[/dim]")
 
-        if input_file:
-            console.print(f"[dim]Input file: {input_file}[/dim]")
-        if output_file:
-            console.print(f"[dim]Output file: {output_file}[/dim]")
+        if inputs:
+            console.print(f"[dim]Input parameters: {inputs}[/dim]")
 
-        execution_mode = "synchronous" if sync else "asynchronous"
-        console.print(f"[dim]Execution mode: {execution_mode}[/dim]")
-
-        # TODO: Implement process execution functionality
-        console.print(
-            '[yellow]Note: execute_process() function needs implementation[/yellow]')
+        # TODO: Handle synchronous vs asynchronous execution
+        # execution_mode = "synchronous" if sync else "asynchronous"
+        # console.print(f"[dim]Execution mode: {execution_mode}[/dim]")
 
         # Initialize OGC API Processes with the effective URL
-        # ogc_processes = OGCAPIProcesses(effective_pygeoapi_url)
-        # ogc_processes.execute_process(process_id, input_data, sync)
+        ogc_processes = OGCAPIProcesses(effective_pygeoapi_url)
+        result = ogc_processes.execute_process(process_id, inputs or {})
 
     except FileNotFoundError as e:
         logger.error(f"Configuration file not found: {e}")
@@ -533,6 +530,7 @@ def execute_process(
     except Exception as e:
         logger.error(f"Error executing process {process_id}: {e}")
         raise typer.Exit(1)
+    return result
 
 # TODO: *Consider adding an optional output file (JSON) of the computed vegetation indices
 

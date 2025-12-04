@@ -1,0 +1,35 @@
+sensorthingsapi_url: http://localhost:8080/FROST-Server/v1.1
+pygeoapi_url: http://localhost:5000/api
+trial_id: MyTrial-2025
+plot_file: data/plot_locations.geojson
+plot_id_field: ID
+year: 2025
+datastreams:
+- name: NDVI - Trial Plot {plot_id}
+  description: Normalized Difference Vegetation Index (NDVI) for Trial Plot {plot_id}
+  observationType: http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement
+  Sensor:
+    '@iot.id': 1
+  ObservedProperty:
+    '@iot.id': 1
+  unitOfMeasurement:
+    name: ''
+    symbol: ''
+    definition: Normalized Difference Vegetation Index
+  properties:
+    raster_data: NDVI
+    spectral_index:
+      name: NDVI
+      formula: (NIR - Red) / (NIR + Red)
+raster_images:
+- path: data/DOP_20240306_TD_D1_Rangacker_MCA_4cm_UTM32.tif
+  timestamp: '2024-03-06T09:00:00+01:00'
+- path: data/DOP_AD24_TD_20240405_D2_MCA_V2_3cm_UTM32.tif
+  timestamp: '2024-04-05T09:00:00+01:00'
+vegetation_indices:
+- name: NDVI
+  process: ndvi
+  bands:
+    red_band: 2
+    nir_band: 5
+
