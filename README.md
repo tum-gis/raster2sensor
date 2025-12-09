@@ -8,7 +8,7 @@ The `raster2sensor` Python package manages agricultural trial plots and processe
 
 ## Installation
 
-GDAL must be installed at the system level before before installing this Python package.
+GDAL must be installed at the system level before installing this Python package.
 
 ---
 
@@ -18,117 +18,124 @@ GDAL must be installed at the system level before before installing this Python 
 
 Install GDAL using using OSGeo4W (recommended)
 
-    i.  Download the OSGeo4W Network Installer.
-    ii. Select **Command Line Tools → gdal** and install.
+- Download the OSGeo4W Network Installer.
+
+- Select **Command Line Tools → gdal** and install.
 
 #### 2. Add GDAL to PATH
 
-    ```powershell
-    setx GDAL_DATA "C:\Program Files\GDAL\gdal-data"
-    setx PATH "%PATH%;C:\Program Files\GDAL"
-    ```
+```powershell
+setx GDAL_DATA "C:\Program Files\GDAL\gdal-data"
+setx PATH "%PATH%;C:\Program Files\GDAL"
+```
 
 #### 3. Install the Python GDAL bindings
 
 Replace `<gdal_version>` with your installed version:
 
-    ```bash
-    pip install GDAL==<gdal_version>
-    ```
+```bash
+pip install GDAL==<gdal_version>
+```
 
 #### 4. Install this package
 
-    ```bash
-    pip install .
-    ```
+``` bash
+pip install .
+```
+
 ---
 
 ### **macOS**
 
 #### 1. Install GDAL (Homebrew recommended)
 
-    ```bash
-    brew install gdal
-    ```
+```bash
+brew install gdal
+```
 
 #### 2. Install the Python GDAL bindings
 
-    ```bash
-    pip install GDAL==$(gdal-config --version)
-    ```
+```bash
+pip install GDAL==$(gdal-config --version)
+```
 
 #### 3. Install this package
 
-    ```bash
-    pip install .
-    ```
+```bash
+pip install .
+```
+
 ---
 
 ### **Linux (Ubuntu / Debian)**
 
 #### 1. Install system GDAL libraries
 
-    ```bash
-    sudo apt update
-    sudo apt install gdal-bin libgdal-dev
-    ```
+```bash
+sudo apt update
+sudo apt install gdal-bin libgdal-dev
+```
 
 #### 2. Install Python GDAL bindings
 
-    ```bash
-    pip install GDAL==$(gdal-config --version)
-    ```
+```bash
+pip install GDAL==$(gdal-config --version)
+```
 
 #### 3. Install the package
 
-    ```bash
-    pip install .
-    ```
+```bash
+pip install .
+```
+
 ---
 
 ### Alternative Installation (Conda)
 
 If you prefer a fully precompiled environment:
 
-    ```bash
-    conda create -n myenv python=3.11
-    conda activate myenv
+```bash
+conda create -n myenv python=3.11
+conda activate myenv
 
-    conda install -c conda-forge gdal
-    conda install -c conda-forge rasterio fiona geopandas  # if your package depends on these
+conda install -c conda-forge gdal
+conda install -c conda-forge rasterio fiona geopandas  # if your package depends on these
 
-    pip install .
-    ```
+pip install .
+```
+
 ---
 
 ### Development Installation
 
 For development with all optional dependencies:
 
-    ```bash
-    git clone https://github.com/joemureithi/raster2sensor.git
-    cd raster2sensor
-    pip install -e .[dev,full]
-    ```
+```bash
+git clone https://github.com/joemureithi/raster2sensor.git
+cd raster2sensor
+pip install -e .[dev,full]
+```
+
 ---
 
 ### Verify Installation
 
 Test your installation:
 
-    ```bash
-    raster2sensor --version
-    python -c "import geopandas, rasterio; print('✅ Geospatial dependencies OK')"
-    ```
+```bash
+raster2sensor --version
+python -c "import geopandas, rasterio; print('✅ Geospatial dependencies OK')"
+```
+
 ---
 
 ## Usage
 
 `raster2sensor` - A tool for raster data processing and OGC SensorThings API integration.
 
-    ```console
-    raster2sensor [OPTIONS] COMMAND [ARGS]...
-    ```
+```console
+raster2sensor [OPTIONS] COMMAND [ARGS]...
+```
 
 **Options**:
 
@@ -165,9 +172,9 @@ The configuration file should contain:
 
 **Usage**:
 
-    ```console
-    raster2sensor process-images [OPTIONS]
-    ```
+```console
+raster2sensor process-images [OPTIONS]
+```
 
 **Options**:
 
@@ -186,9 +193,9 @@ This creates a comprehensive configuration file, which includes trial metadata, 
 
 **Usage**:
 
-    ```console
-    raster2sensor create-sample-config [OPTIONS]
-    ```
+```console
+raster2sensor create-sample-config [OPTIONS]
+```
 
 **Options**:
 
@@ -202,9 +209,9 @@ Trial plots management in OGC SensorThings API commands
 
 **Usage**:
 
-    ```console
-    raster2sensor plots [OPTIONS] COMMAND [ARGS]...
-    ```
+```console
+raster2sensor plots [OPTIONS] COMMAND [ARGS]...
+```
 
 **Options**:
 
@@ -232,9 +239,9 @@ config_file: Path to configuration file
 
 **Usage**:
 
-    ```console
-    raster2sensor plots fetch [OPTIONS]
-    ```
+```console
+raster2sensor plots fetch [OPTIONS]
+```
 
 **Options**:
 
@@ -259,9 +266,9 @@ Parameters from the config file will be used unless explicitly overridden via co
 
 **Usage**:
 
-    ```console
-    raster2sensor plots create [OPTIONS]
-    ```
+```console
+raster2sensor plots create [OPTIONS]
+```
 
 **Options**:
 
@@ -283,9 +290,9 @@ for the specified trial. You must provide a configuration file with datastream d
 
 **Usage**:
 
-    ```console
-    raster2sensor plots add-datastreams [OPTIONS]
-    ```
+```console
+raster2sensor plots add-datastreams [OPTIONS]
+```
 
 **Options**:
 
@@ -300,9 +307,9 @@ OGC API - Processes commands
 
 **Usage**:
 
-    ```console
-    raster2sensor processes [OPTIONS] COMMAND [ARGS]...
-    ```
+```console
+raster2sensor processes [OPTIONS] COMMAND [ARGS]...
+```
 
 **Options**:
 
@@ -325,9 +332,9 @@ You can provide either:
 
 **Usage**:
 
-    ```console
-    raster2sensor processes fetch [OPTIONS]
-    ```
+```console
+raster2sensor processes fetch [OPTIONS]
+```
 
 **Options**:
 
@@ -351,9 +358,9 @@ config_file: Path to configuration file
 
 **Usage**:
 
-    ```console
-    raster2sensor processes describe [OPTIONS]
-    ```
+```console
+raster2sensor processes describe [OPTIONS]
+```
 
 **Options**:
 
@@ -381,9 +388,9 @@ sync: Whether to execute synchronously (default: True)
 
 **Usage**:
 
-    ```console
-    raster2sensor processes execute [OPTIONS]
-    ```
+```console
+raster2sensor processes execute [OPTIONS]
+```
 
 **Options**:
 
