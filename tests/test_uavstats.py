@@ -2,7 +2,7 @@
 
 from typer.testing import CliRunner
 
-from uavstats import __app_name__, __version__, cli
+from raster2sensor import __app_name__, __version__, cli
 
 runner = CliRunner()
 

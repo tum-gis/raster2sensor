@@ -2,7 +2,7 @@
 
 from typer.testing import CliRunner
 from dataclasses import asdict
-from uavstats.sensorthingsapi import Thing, Location, UnitOfMeasurement, Datastream
+from raster2sensor.sensorthingsapi import Thing, Location, UnitOfMeasurement, Datastream
 
 runner = CliRunner()
 
