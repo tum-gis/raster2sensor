@@ -455,8 +455,8 @@ def execute_process(
     pygeoapi_url: str = typer.Option(None, help="PyGeoAPI URL"),
     config_file: str = typer.Option(
         None, "--config", help="Path to configuration file (YAML or JSON) containing pygeoapi_url"),
-    inputs: Optional[dict] = typer.Option(
-        None, help="Input parameters for the process"),
+    inputs: Optional[str] = typer.Option(
+        None, help="Input parameters for the process as JSON string"),
     # sync: bool = typer.Option(True, help="Execute synchronously")
 ):
     """
@@ -510,8 +510,16 @@ def execute_process(
         console.print(f"[cyan]Executing process: {process_id}[/cyan]")
         console.print(f"[dim]PyGeoAPI URL: {effective_pygeoapi_url}[/dim]")
 
+        # Parse inputs if provided as JSON string
+        inputs_dict = {}
         if inputs:
-            console.print(f"[dim]Input parameters: {inputs}[/dim]")
+            import json
+            try:
+                inputs_dict = json.loads(inputs)
+                console.print(f"[dim]Input parameters: {inputs_dict}[/dim]")
+            except json.JSONDecodeError as e:
+                logger.error(f"Invalid JSON for inputs: {e}")
+                raise typer.Exit(1)
 
         # TODO: Handle synchronous vs asynchronous execution
         # execution_mode = "synchronous" if sync else "asynchronous"
@@ -519,7 +527,7 @@ def execute_process(
 
         # Initialize OGC API Processes with the effective URL
         ogc_processes = OGCAPIProcesses(effective_pygeoapi_url)
-        result = ogc_processes.execute_process(process_id, inputs or {})
+        result = ogc_processes.execute_process(process_id, inputs_dict)
 
     except FileNotFoundError as e:
         logger.error(f"Configuration file not found: {e}")
