@@ -2,6 +2,7 @@ sensorthingsapi_url: http://localhost:8080/FROST-Server/v1.1
 pygeoapi_url: http://localhost:5000/api
 trial_id: MyTrial-2025
 plot_id_field: ID
+ndvi_file: data/ndvi_MyTrial-2025.csv
 year: 2025
 datastreams:
 - name: NDVI - Trial Plot {plot_id}

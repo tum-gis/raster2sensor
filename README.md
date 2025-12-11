@@ -379,11 +379,10 @@ You can provide either:
 - Configuration file: --config (containing pygeoapi_url)
 
 Args:
-process_id: The ID of the process to execute
+process_id: The ID of the process to execute (required)
 pygeoapi_url: PyGeoAPI URL
 config_file: Path to configuration file
-input_file: Path to input file (optional)
-output_file: Path to output file (optional)
+inputs: JSON string of inputs (optional)
 sync: Whether to execute synchronously (default: True)
 
 **Usage**:
@@ -397,7 +396,6 @@ raster2sensor processes execute [OPTIONS]
 - `--process-id TEXT`: The ID of the process to execute [required]
 - `--pygeoapi-url TEXT`: PyGeoAPI URL
 - `--config TEXT`: Path to configuration file (YAML or JSON) containing pygeoapi_url
-- `--input-file TEXT`: Input file path
-- `--output-file TEXT`: Output file path
+- `--inputs STRING`: JSON String of input parameters for the process
 - `--sync / --no-sync`: Execute synchronously [default: sync]
 - `--help`: Show this message and exit.

@@ -8,8 +8,9 @@ from dataclasses import dataclass, asdict, field
 import sys
 from typing import Optional
 import geopandas as gpd
+import pandas as pd
 from raster2sensor import config
-from raster2sensor.utils import clear, get_file_extension, create_sensorthingsapi_entity, fetch_sensorthingsapi
+from raster2sensor.utils import clear, get_file_extension, create_sensorthingsapi_entity, fetch_sensorthingsapi, fetch_data
 from raster2sensor.sensorthingsapi import Thing, Location, Datastream
 # from raster2sensor.spatialtools import convert_geometry_to_geojson
 from raster2sensor.logging import get_logger
@@ -248,7 +249,7 @@ class Plots:
         )
 
     @staticmethod
-    def create_observations(sensorthingsapi_url: str, zonal_stats: dict, flight_timestamp: str):
+    def create_observations(sensorthingsapi_url: str, zonal_stats, flight_timestamp: str):
         """Create Observations for each parcel
         Args:
             sensorthingsapi_url (str): SensorThingsAPI URL
@@ -418,6 +419,84 @@ class Plots:
             error_msg = f"❌ Failed to post observations: {str(e)}"
             logger.error(error_msg)
             raise
+
+    @staticmethod
+    def fetch_ndvi(sensorthingsapi_url: str, trial_id: str, ndvi_file: Path):
+        '''Fetch NDVI Observations from SensorThingsAPI and save to CSV
+        Args:
+            sensorthingsapi_url (str): SensorThingsAPI URL
+            trial_id (str): Trial ID (Location-Year)
+            ndvi_file (Path): Path to save NDVI CSV file
+        Returns:
+            ndvi_data (dict): NDVI Observations
+        '''
+        ndvi_url = f"{sensorthingsapi_url}/Things?$filter=properties/trial_id%20eq%20%27{trial_id}%27&$top=1&$expand=Datastreams($filter=properties/raster_data%20eq%20%27NDVI%27;$expand=Observations($select=result,phenomenonTime))"
+        ndvi_data = fetch_data(ndvi_url)
+        if not ndvi_data:
+            error_msg = f"❌ No NDVI observations found for trial id: '{trial_id}'"
+            logger.error(error_msg)
+            sys.exit(1)
+        else:
+            logger.info(
+                f"Fetched {len(ndvi_data['value'][0]['Datastreams'][0]['Observations'])} NDVI observations for trial id: '{trial_id}'")
+
+        # Extract NDVI mean values and timestamps
+        ndvi_records = []
+
+        # Navigate through the nested structure
+        if 'value' in ndvi_data and ndvi_data['value']:
+            for thing in ndvi_data['value']:
+                if 'Datastreams' in thing:
+                    for datastream in thing['Datastreams']:
+                        if 'Observations' in datastream:
+                            for observation in datastream['Observations']:
+                                phenomenon_time = observation.get(
+                                    'phenomenonTime')
+                                result = observation.get(
+                                    'result', {}).get('median')
+
+                                if phenomenon_time and result is not None:
+                                    # # Parse the ISO timestamp and format it
+                                    # dt = datetime.fromisoformat(
+                                    #     phenomenon_time.replace('Z', '+00:00'))
+                                    # formatted_time = dt.strftime(
+                                    #     '%Y-%m-%d %H:%M:%S')
+
+                                    ndvi_records.append({
+                                        'phenomenonTime': phenomenon_time,
+                                        'ndvi': round(result, 5)
+                                    })
+
+        # Create DataFrame and sort by timestamp (descending)
+        if ndvi_records:
+            df = pd.DataFrame(ndvi_records)
+            df['phenomenonTime'] = pd.to_datetime(df['phenomenonTime'])
+            df = df.sort_values('phenomenonTime', ascending=False)
+            df['phenomenonTime'] = df['phenomenonTime']
+            # df['phenomenonTime'] = df['phenomenonTime'].dt.strftime(
+            #     '%Y-%m-%d %H:%M:%S')
+
+            # # Ensure data directory exists
+            # data_dir = Path('data')
+            # data_dir.mkdir(exist_ok=True)
+
+            # # Save to CSV
+            # csv_filename = data_dir / \
+            #     f'ndvi_{trial_id.lower().replace("-", "_")}.csv'
+            df.to_csv(ndvi_file, index=False)
+
+            logger.info(f"💾 NDVI data saved to {ndvi_file}")
+            logger.info(f"📊 Extracted {len(ndvi_records)} NDVI observations:")
+
+            # Display the data in the requested format
+            print("\n📈 NDVI Time Series Data:")
+            print('"phenomenonTime","ndvi"')
+            for _, row in df.iterrows():
+                print(f'{row["phenomenonTime"]},{row["ndvi"]}')
+        else:
+            logger.warning("⚠️ No NDVI observations found in the response")
+
+        return ndvi_data
 
 
 if __name__ == "__main__":

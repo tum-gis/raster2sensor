@@ -42,6 +42,7 @@ class Config:
     year: int
     sensorthingsapi_url: str
     pygeoapi_url: str
+    ndvi_file: Path
     datastreams: List[Dict[str, Any]]
     raster_images: List[RasterImage]
     vegetation_indices: List[VegetationIndex]
@@ -133,6 +134,7 @@ class ConfigParser:
             trial_id=config_data['trial_id'],
             plot_id_field=config_data['plot_id_field'],
             year=config_data.get('year', 2025),  # Default year to 2025
+            ndvi_file=Path(config_data.get('ndvi_file', 'data/ndvi_data.csv')),
             sensorthingsapi_url=config_data['sensorthingsapi_url'],
             pygeoapi_url=config_data['pygeoapi_url'],
             datastreams=datastreams,
@@ -154,6 +156,7 @@ class ConfigParser:
             "pygeoapi_url": "http://localhost:5000/api",
             "trial_id": "MyTrial-2025",
             "plot_id_field": "ID",
+            "ndvi_file": "data/ndvi_MyTrial-2025.csv",
             "year": 2025,
             "datastreams": [
                 {

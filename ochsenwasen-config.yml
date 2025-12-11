@@ -1,6 +1,7 @@
 trial_id: Ochsenwasen-2025
 plot_id_field: plot_id
 year: 2025
+ndvi_file: data/ndvi_ochsenwasen_2025.csv
 # sensorthingsapi_url: "http://localhost:8080/FROST-Server/v1.1"
 pygeoapi_url: "http://localhost:5000"
 sensorthingsapi_url: "https://tuzehez-fairagro.srv.mwn.de/frost/v1.1"

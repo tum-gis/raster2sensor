@@ -318,6 +318,82 @@ def add_datastreams(
         raise typer.Exit(1)
 
 
+@plots_app.command("fetch-ndvi")
+def fetch_ndvi_data(
+    trial_id: str = typer.Option(
+        None, help="Trial identifier to fetch NDVI data for"),
+    sensorthingsapi_url: str = typer.Option(None, help="SensorThingsAPI URL"),
+    ndvi_file: Path = typer.Option(
+        None, "--ndvi-file", help="Path to save NDVI CSV file"),
+    config_file: str = typer.Option(
+        None, "--config", help="Path to configuration file (YAML or JSON) containing sensorthingsapi_url and trial_id")
+):
+    """
+    Fetch NDVI time series data for a given trial ID and save to CSV.
+
+    You can provide either:
+    - Individual parameters: --trial-id and --sensorthingsapi-url --ndvi-file
+    - Configuration file: --config (containing sensorthingsapi_url and trial_id)
+
+    The NDVI data will be extracted from SensorThings API observations and saved 
+    to 'data/ndvi_{trial_id}.csv' with phenomenonTime and mean values.
+
+    Args:
+        trial_id: The trial identifier to fetch NDVI data for
+        sensorthingsapi_url: SensorThings API URL
+        ndvi_file: Path to save NDVI CSV file
+        config_file: Path to configuration file
+    """
+    clear()
+
+    # Validate input parameters
+    if config_file and (trial_id or sensorthingsapi_url):
+        logger.error(
+            "Cannot specify both --config and individual parameters (--trial-id, --sensorthingsapi-url). Choose one approach.")
+        raise typer.Exit(1)
+
+    if not config_file and not (trial_id and sensorthingsapi_url):
+        logger.error(
+            "Must specify either --config file OR both --trial-id and --sensorthingsapi-url")
+        raise typer.Exit(1)
+
+    try:
+        if config_file:
+            # Load configuration from file
+            logger.info(f"Loading configuration from: {config_file}")
+            config = ConfigParser.load_config(config_file)
+            effective_trial_id = config.trial_id
+            effective_sensorthingsapi_url = config.sensorthingsapi_url
+            effective_ndvi_file = config.ndvi_file
+            logger.info(f"Using trial_id from config: {effective_trial_id}")
+            logger.info(
+                f"Using sensorthingsapi_url from config: {effective_sensorthingsapi_url}")
+        else:
+            # Use provided arguments
+            effective_trial_id = trial_id
+            effective_sensorthingsapi_url = sensorthingsapi_url
+            effective_ndvi_file = ndvi_file
+            logger.info(f"Using provided trial_id: {effective_trial_id}")
+            logger.info(
+                f"Using provided sensorthingsapi_url: {effective_sensorthingsapi_url}")
+
+        logger.info(f"🌱 Fetching NDVI data for trial ID: {effective_trial_id}")
+        Plots.fetch_ndvi(
+            effective_sensorthingsapi_url, effective_trial_id, effective_ndvi_file)
+
+        logger.info("✓ NDVI data fetch completed successfully!")
+
+    except FileNotFoundError as e:
+        logger.error(f"Configuration file not found: {e}")
+        raise typer.Exit(1)
+    except ValueError as e:
+        logger.error(f"Configuration error: {e}")
+        raise typer.Exit(1)
+    except Exception as e:
+        logger.error(f"Error fetching NDVI data: {e}")
+        raise typer.Exit(1)
+
+
 # =============================================================================
 # PROCESSES COMMANDS
 # =============================================================================
@@ -540,7 +616,7 @@ def execute_process(
         raise typer.Exit(1)
     return result
 
-# TODO: *Consider adding an optional output file (JSON) of the computed vegetation indices
+# TODO: *Consider adding an optional output file (CSV/JSON) of the computed vegetation indices
 
 
 @app.command("process-images")
@@ -692,7 +768,6 @@ def process_images(
 
     except FileNotFoundError as e:
         logger.error(f"Configuration file not found: {e}")
-
         raise typer.Exit(1)
     except ValueError as e:
         logger.error(f"Configuration error: {e}")

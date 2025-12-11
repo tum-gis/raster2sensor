@@ -94,7 +94,7 @@ elif sys.platform != 'win32':
 
 setup(
     name='raster2sensor',
-    version='0.1.0',
+    version='1.0.0',
     description='A tool for processing raster images for integration as sensor data.',
     author='Joseph Gitahi',
     author_email='joseph.gitahi@tum.de',
