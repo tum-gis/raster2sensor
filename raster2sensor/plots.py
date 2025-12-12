@@ -456,14 +456,14 @@ class Plots:
                                     'result', {}).get('median')
 
                                 if phenomenon_time and result is not None:
-                                    # # Parse the ISO timestamp and format it
-                                    # dt = datetime.fromisoformat(
-                                    #     phenomenon_time.replace('Z', '+00:00'))
-                                    # formatted_time = dt.strftime(
-                                    #     '%Y-%m-%d %H:%M:%S')
+                                    # Parse the ISO timestamp and format it
+                                    dt = datetime.fromisoformat(
+                                        phenomenon_time.replace('Z', '+00:00'))
+                                    formatted_time = dt.strftime(
+                                        '%Y-%m-%d %H:%M:%S')
 
                                     ndvi_records.append({
-                                        'phenomenonTime': phenomenon_time,
+                                        'phenomenonTime': formatted_time,
                                         'ndvi': round(result, 5)
                                     })
 

@@ -317,6 +317,8 @@ def add_datastreams(
         logger.error(f"Error adding datastreams for trial {trial_id}: {e}")
         raise typer.Exit(1)
 
+# TODO: Check whether individual parameters override config file parameters
+
 
 @plots_app.command("fetch-ndvi")
 def fetch_ndvi_data(
@@ -347,14 +349,14 @@ def fetch_ndvi_data(
     clear()
 
     # Validate input parameters
-    if config_file and (trial_id or sensorthingsapi_url):
+    if config_file and (trial_id or sensorthingsapi_url or ndvi_file):
         logger.error(
-            "Cannot specify both --config and individual parameters (--trial-id, --sensorthingsapi-url). Choose one approach.")
+            "Cannot specify both --config and individual parameters (--trial-id, --sensorthingsapi-url, --ndvi-file). Choose one approach.")
         raise typer.Exit(1)
 
-    if not config_file and not (trial_id and sensorthingsapi_url):
+    if not config_file and not (trial_id and sensorthingsapi_url and ndvi_file):
         logger.error(
-            "Must specify either --config file OR both --trial-id and --sensorthingsapi-url")
+            "Must specify either --config file OR both --trial-id and --sensorthingsapi-url and --ndvi-file")
         raise typer.Exit(1)
 
     try:
