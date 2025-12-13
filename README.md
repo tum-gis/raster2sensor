@@ -111,7 +111,7 @@ pip install .
 For development with all optional dependencies:
 
 ```bash
-git clone https://github.com/joemureithi/raster2sensor.git
+git clone https://github.com/tum-gis/raster2sensor.git
 cd raster2sensor
 pip install -e .[dev,full]
 ```
