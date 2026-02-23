@@ -106,6 +106,70 @@ pip install .
 
 ---
 
+### Docker
+
+If you prefer not to install GDAL and the geospatial stack locally, a Docker image is provided that bundles everything (GDAL via conda-forge, all Python dependencies, and the `raster2sensor` CLI).
+
+#### 1. Build the image
+
+```bash
+git clone https://github.com/tum-gis/raster2sensor.git
+cd raster2sensor
+docker build -t raster2sensor:latest .
+```
+
+#### 2. Run CLI commands
+
+Mount the directory that contains your config files and raster data as `/data` inside the container. `raster2sensor` will then be able to read paths relative to `/data`.
+
+**Show help:**
+
+```bash
+docker run --rm raster2sensor:latest --help
+```
+
+**Fetch available OGC API Processes:**
+
+```bash
+docker run --rm raster2sensor:latest processes fetch \
+  --pygeoapi-url https://<your-pygeoapi-host>/pygeoapi
+```
+
+**Fetch plots from SensorThings API:**
+
+```bash
+docker run --rm raster2sensor:latest plots fetch \
+  --trial-id <trial-id> \
+  --sensorthingsapi-url https://<your-frost-host>/frost/v1.1
+```
+
+**Create plots from a GeoJSON file** (config and data files are in `./my-data/` on the host):
+
+```bash
+docker run --rm \
+  -v "$(pwd)/my-data:/data" \
+  raster2sensor:latest plots create \
+  --config /data/config.yml \
+  --file-path /data/plots.geojson
+```
+
+**Process raster images** (dry-run):
+
+```bash
+docker run --rm \
+  -v "$(pwd)/my-data:/data" \
+  raster2sensor:latest process-images \
+  --config /data/config.yml \
+  --dry-run
+```
+
+> **Note – Windows paths**: Use `` `pwd` `` (PowerShell) or `%cd%` (CMD) instead of `$(pwd)`:
+> ```powershell
+> docker run --rm -v "${PWD}\my-data:/data" raster2sensor:latest process-images --config /data/config.yml
+> ```
+
+---
+
 ### Development Installation
 
 For development with all optional dependencies:

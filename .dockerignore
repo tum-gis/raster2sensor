@@ -1,0 +1,49 @@
+# Version control
+.git
+.gitignore
+
+# Python caches / build artefacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual / conda environments
+.venv/
+venv/
+env/
+.conda/
+
+# Test artefacts
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE / editor configs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docs
+docs/
+
+# Logs
+logs/
+*.log
+
+# Data files (mount at runtime via -v instead of baking into the image)
+data/
+
+# Backup directory
+raster2sensor/bkp/
+
+# Config files that contain secrets / local paths
+*.env
+.env*
+
+# OS artefacts
+.DS_Store
+Thumbs.db
